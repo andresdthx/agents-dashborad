@@ -17,6 +17,7 @@ export type Database = {
           llm_temperature: number;
           conversation_history_limit: number;
           sales_prompt_id: string | null;
+          notification_phone: string | null;
           created_at: string;
           updated_at: string | null;
         };
@@ -31,6 +32,7 @@ export type Database = {
           llm_temperature?: number;
           conversation_history_limit?: number;
           sales_prompt_id?: string | null;
+          notification_phone?: string | null;
         };
         Update: {
           name?: string;
@@ -43,6 +45,7 @@ export type Database = {
           llm_temperature?: number;
           conversation_history_limit?: number;
           sales_prompt_id?: string | null;
+          notification_phone?: string | null;
         };
         Relationships: [];
       };
@@ -56,6 +59,8 @@ export type Database = {
           bot_paused: boolean;
           bot_paused_reason: string | null;
           bot_paused_at: string | null;
+          resumed_at: string | null;
+          status: "bot_active" | "human_active" | "resolved" | "lost";
           extracted_data: Record<string, unknown> | null;
           order_data: Record<string, unknown> | null;
           order_confirmed_at: string | null;
@@ -70,6 +75,8 @@ export type Database = {
           bot_paused?: boolean;
           bot_paused_reason?: string | null;
           bot_paused_at?: string | null;
+          resumed_at?: string | null;
+          status?: "bot_active" | "human_active" | "resolved" | "lost";
           extracted_data?: Record<string, unknown> | null;
           order_data?: Record<string, unknown> | null;
         };
@@ -81,6 +88,8 @@ export type Database = {
           bot_paused?: boolean;
           bot_paused_reason?: string | null;
           bot_paused_at?: string | null;
+          resumed_at?: string | null;
+          status?: "bot_active" | "human_active" | "resolved" | "lost";
           extracted_data?: Record<string, unknown> | null;
           order_data?: Record<string, unknown> | null;
         };
@@ -129,7 +138,7 @@ export type Database = {
           id: string;
           name: string;
           content: string;
-          agent_type: "sales" | "intent" | "vision";
+          agent_type: "sales" | "intent" | "vision" | "classifier";
           client_id: string | null;
           is_active: boolean;
           version: number;
@@ -140,7 +149,7 @@ export type Database = {
         Insert: {
           name: string;
           content: string;
-          agent_type: "sales" | "intent" | "vision";
+          agent_type: "sales" | "intent" | "vision" | "classifier";
           client_id?: string | null;
           is_active?: boolean;
           version?: number;
@@ -195,6 +204,8 @@ export type Database = {
           bot_paused: boolean;
           bot_paused_reason: string | null;
           bot_paused_at: string | null;
+          resumed_at: string | null;
+          status: "bot_active" | "human_active" | "resolved" | "lost";
           error?: string;
         };
       };

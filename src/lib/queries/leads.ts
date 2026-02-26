@@ -43,12 +43,14 @@ export async function getLeads({
   pageSize = 25,
   classification,
   botPaused,
+  status,
   search,
 }: {
   page?: number;
   pageSize?: number;
   classification?: "hot" | "warm" | "cold";
   botPaused?: boolean;
+  status?: "bot_active" | "human_active" | "resolved" | "lost";
   search?: string;
 }) {
   const supabase = await createClient();
@@ -58,7 +60,7 @@ export async function getLeads({
   let query = supabase
     .from("leads")
     .select(
-      "id, phone, classification, score, bot_paused, bot_paused_reason, bot_paused_at, created_at, updated_at",
+      "id, phone, classification, score, bot_paused, bot_paused_reason, bot_paused_at, status, created_at, updated_at",
       { count: "exact" }
     )
     .order("updated_at", { ascending: false, nullsFirst: false })
@@ -67,10 +69,56 @@ export async function getLeads({
 
   if (classification) query = query.eq("classification", classification);
   if (botPaused !== undefined) query = query.eq("bot_paused", botPaused);
+  if (status) query = query.eq("status", status);
   if (search) query = query.ilike("phone", `%${search}%`);
 
   const { data, count, error } = await query;
   return { leads: data ?? [], total: count ?? 0, error };
+}
+
+export async function getLeadChartData() {
+  const supabase = await createClient();
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  const [
+    { data: weekRaw },
+    { count: botActive },
+    { count: humanActive },
+    { count: resolved },
+    { count: lost },
+  ] = await Promise.all([
+    supabase.from("leads").select("created_at").gte("created_at", sevenDaysAgo.toISOString()),
+    supabase.from("leads").select("*", { count: "exact", head: true }).eq("status", "bot_active"),
+    supabase.from("leads").select("*", { count: "exact", head: true }).eq("status", "human_active"),
+    supabase.from("leads").select("*", { count: "exact", head: true }).eq("status", "resolved"),
+    supabase.from("leads").select("*", { count: "exact", head: true }).eq("status", "lost"),
+  ]);
+
+  // Build 7-day trend array (UTC dates)
+  const days: { date: string; count: number }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push({ date: d.toISOString().slice(0, 10), count: 0 });
+  }
+  for (const row of weekRaw ?? []) {
+    const key = (row.created_at as string).slice(0, 10);
+    const day = days.find((d) => d.date === key);
+    if (day) day.count++;
+  }
+
+  return {
+    weeklyTrend: days,
+    statusCounts: {
+      bot_active: botActive ?? 0,
+      human_active: humanActive ?? 0,
+      resolved: resolved ?? 0,
+      lost: lost ?? 0,
+    },
+  };
 }
 
 export async function getLeadById(

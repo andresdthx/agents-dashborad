@@ -1,8 +1,11 @@
-import { getLeadStats } from "@/lib/queries/leads";
+import { getLeadStats, getLeadChartData } from "@/lib/queries/leads";
 import { StatsCards } from "@/components/dashboard/StatsCards";
+import { DonutChart } from "@/components/dashboard/DonutChart";
+import { WeeklySparkline } from "@/components/dashboard/WeeklySparkline";
+import { StatusBars } from "@/components/dashboard/StatusBars";
 
 export default async function DashboardPage() {
-  const stats = await getLeadStats();
+  const [stats, chartData] = await Promise.all([getLeadStats(), getLeadChartData()]);
 
   return (
     <div className="space-y-6">
@@ -26,6 +29,14 @@ export default async function DashboardPage() {
       </div>
 
       <StatsCards stats={stats} />
+
+      {/* Charts */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <DonutChart hot={stats.hot} warm={stats.warm} cold={stats.cold} />
+        <WeeklySparkline data={chartData.weeklyTrend} />
+      </div>
+
+      <StatusBars statusCounts={chartData.statusCounts} />
     </div>
   );
 }

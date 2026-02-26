@@ -5,6 +5,7 @@ interface SearchParams {
   page?: string;
   classification?: string;
   paused?: string;
+  status?: string;
   search?: string;
 }
 
@@ -18,6 +19,8 @@ export default async function LeadsPage({
   const pageSize = 25;
 
   const classification = params.classification as "hot" | "warm" | "cold" | undefined;
+  const status = params.status as "bot_active" | "human_active" | "resolved" | "lost" | undefined;
+  // Legacy paused param kept for backwards compat with StatsCards link
   const botPaused =
     params.paused === "true" ? true : params.paused === "false" ? false : undefined;
 
@@ -26,6 +29,7 @@ export default async function LeadsPage({
     pageSize,
     classification,
     botPaused,
+    status,
     search: params.search,
   });
 

@@ -29,15 +29,15 @@ export default async function EditClientPage({
     <div className="space-y-6">
       <Link
         href="/admin/clients"
-        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800"
+        className="inline-flex items-center gap-1 text-sm text-ink-3 transition-colors hover:text-ink-2"
       >
         <ChevronLeft className="h-4 w-4" />
         Volver a clientes
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold">Editar cliente</h1>
-        <p className="mt-1 text-sm text-zinc-500">{client.name}</p>
+        <h1 className="text-lg font-semibold text-ink">Editar cliente</h1>
+        <p className="mt-1 text-sm text-ink-3">{client.name}</p>
       </div>
 
       <ClientForm

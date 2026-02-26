@@ -24,6 +24,29 @@ import {
 import { cn, formatDate } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+const statusLabel: Record<string, string> = {
+  bot_active: "Bot activo",
+  human_active: "Atención humana",
+  resolved: "Resuelto",
+  lost: "Perdido",
+};
+
+const statusStyle: Record<string, string> = {
+  bot_active:
+    "border-bot-active/25 bg-bot-active-surface text-bot-active-text",
+  human_active:
+    "border-bot-paused/25 bg-bot-paused-surface text-bot-paused-text",
+  resolved: "border-edge bg-surface text-ink-3",
+  lost: "border-lead-hot/20 bg-lead-hot-surface text-lead-hot-text",
+};
+
+const statusDot: Record<string, string> = {
+  bot_active: "bg-bot-active",
+  human_active: "bg-bot-paused",
+  resolved: "bg-ink-4",
+  lost: "bg-lead-hot",
+};
+
 interface Props {
   leads: Pick<
     Lead,
@@ -33,6 +56,7 @@ interface Props {
     | "score"
     | "bot_paused"
     | "bot_paused_reason"
+    | "status"
     | "created_at"
   >[];
   total: number;
@@ -93,16 +117,18 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
         </Select>
 
         <Select
-          defaultValue={searchParams.get("paused") ?? "all"}
-          onValueChange={(v) => updateParam("paused", v)}
+          defaultValue={searchParams.get("status") ?? "all"}
+          onValueChange={(v) => updateParam("status", v)}
         >
-          <SelectTrigger className="w-40 border-edge bg-surface-raised text-ink focus:ring-signal">
-            <SelectValue placeholder="Estado bot" />
+          <SelectTrigger className="w-44 border-edge bg-surface-raised text-ink focus:ring-signal">
+            <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="true">Bot pausado</SelectItem>
-            <SelectItem value="false">Bot activo</SelectItem>
+            <SelectItem value="bot_active">Bot activo</SelectItem>
+            <SelectItem value="human_active">Atención humana</SelectItem>
+            <SelectItem value="resolved">Resuelto</SelectItem>
+            <SelectItem value="lost">Perdido</SelectItem>
           </SelectContent>
         </Select>
 
@@ -118,8 +144,8 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
             <TableRow className="border-edge hover:bg-transparent">
               <TableHead className="text-ink-3 font-medium">Teléfono</TableHead>
               <TableHead className="text-ink-3 font-medium">Clasificación</TableHead>
-              <TableHead className="text-center text-ink-3 font-medium">Score</TableHead>
-              <TableHead className="text-ink-3 font-medium">Bot</TableHead>
+              <TableHead className="text-center text-ink-3 font-medium">Puntaje IA</TableHead>
+              <TableHead className="text-ink-3 font-medium">Estado</TableHead>
               <TableHead className="text-ink-3 font-medium">Fecha</TableHead>
             </TableRow>
           </TableHeader>
@@ -171,17 +197,12 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                     )}
                   </TableCell>
                   <TableCell>
-                    {lead.bot_paused ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-md border border-bot-paused/25 bg-bot-paused-surface px-2 py-0.5 text-xs font-medium text-bot-paused-text">
-                        <span className="h-1.5 w-1.5 rounded-full bg-bot-paused" />
-                        Pausado
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 rounded-md border border-bot-active/25 bg-bot-active-surface px-2 py-0.5 text-xs font-medium text-bot-active-text">
-                        <span className="h-1.5 w-1.5 rounded-full bg-bot-active" />
-                        Activo
-                      </span>
-                    )}
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-medium ${statusStyle[lead.status] ?? statusStyle.bot_active}`}
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${statusDot[lead.status] ?? statusDot.bot_active}`} />
+                      {statusLabel[lead.status] ?? lead.status}
+                    </span>
                   </TableCell>
                   <TableCell className="font-mono text-xs tabular-nums text-ink-3">
                     {formatDate(lead.created_at)}
@@ -198,6 +219,9 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
         <div className="flex items-center justify-between text-xs text-ink-3">
           <span className="tabular-nums">
             Página {page} de {totalPages}
+            <span className="ml-1.5 text-ink-4">
+              · {total} resultado{total !== 1 ? "s" : ""}
+            </span>
           </span>
           <div className="flex gap-1.5">
             <button

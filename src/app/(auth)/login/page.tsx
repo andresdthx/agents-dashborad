@@ -22,7 +22,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      toast.error("Credenciales inválidas");
+      toast.error("Email o contraseña incorrectos");
       setLoading(false);
       return;
     }

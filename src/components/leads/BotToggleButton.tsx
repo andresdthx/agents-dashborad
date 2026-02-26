@@ -10,9 +10,10 @@ interface Props {
   leadId: string;
   botPaused: boolean;
   botPausedReason: string | null;
+  status: "bot_active" | "human_active" | "resolved" | "lost";
 }
 
-export function BotToggleButton({ leadId, botPaused, botPausedReason }: Props) {
+export function BotToggleButton({ leadId, botPaused, botPausedReason, status }: Props) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -47,13 +48,13 @@ export function BotToggleButton({ leadId, botPaused, botPausedReason }: Props) {
     <div className="flex flex-col items-end gap-2">
       <div className="flex items-center gap-2">
         {/* State indicator */}
-        {botPaused ? (
+        {status === "human_active" ? (
           <div className="flex items-center gap-2 rounded-md border border-bot-paused/25 bg-bot-paused-surface px-3 py-1.5">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bot-paused opacity-50" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-bot-paused" />
             </span>
-            <span className="text-sm font-medium text-bot-paused-text">Bot pausado</span>
+            <span className="text-sm font-medium text-bot-paused-text">Atención humana</span>
           </div>
         ) : (
           <div className="flex items-center gap-2 rounded-md border border-bot-active/25 bg-bot-active-surface px-3 py-1.5">

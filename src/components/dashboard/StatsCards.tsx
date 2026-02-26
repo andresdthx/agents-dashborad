@@ -1,4 +1,4 @@
-import { Flame, ThermometerSun, Snowflake, Users, CalendarDays, PauseCircle } from "lucide-react";
+import { Flame, ThermometerSun, Snowflake, Users, CalendarDays, PauseCircle, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 interface Stats {
@@ -23,21 +23,23 @@ export function StatsCards({ stats }: { stats: Stats }) {
       <div className="grid grid-cols-3 gap-3">
         <Link
           href="/dashboard/leads?classification=hot"
-          className="rounded-xl border border-lead-hot/20 bg-lead-hot-surface p-4 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-lead-hot/35 hover:shadow-md"
+          aria-label={`Ver ${stats.hot} leads urgentes (Hot)`}
+          className="group rounded-xl border border-lead-hot/20 bg-lead-hot-surface p-4 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-lead-hot/35 hover:shadow-md"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-lead-hot-text opacity-50">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-lead-hot-text opacity-70">
               Hot
             </span>
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-lead-hot/10">
-              <Flame className="h-3.5 w-3.5 text-lead-hot" />
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-lead-hot/10 transition-colors group-hover:bg-lead-hot/20">
+              <Flame className="h-3.5 w-3.5 text-lead-hot transition-all group-hover:hidden" />
+              <ArrowUpRight className="hidden h-3.5 w-3.5 text-lead-hot group-hover:block" />
             </div>
           </div>
           <p className="mt-3 font-mono text-4xl font-bold tabular-nums text-lead-hot-text">
             {stats.hot}
           </p>
           <div className="mt-2 flex items-baseline justify-between">
-            <p className="text-xs text-lead-hot-text opacity-50">leads críticos</p>
+            <p className="text-xs text-lead-hot-text opacity-70">leads críticos</p>
             {classified > 0 && (
               <span className="font-mono text-[11px] font-semibold tabular-nums text-lead-hot opacity-70">
                 {hotPct}%
@@ -53,21 +55,23 @@ export function StatsCards({ stats }: { stats: Stats }) {
 
         <Link
           href="/dashboard/leads?classification=warm"
-          className="rounded-xl border border-lead-warm/20 bg-lead-warm-surface p-4 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-lead-warm/35 hover:shadow-md"
+          aria-label={`Ver ${stats.warm} leads en seguimiento (Warm)`}
+          className="group rounded-xl border border-lead-warm/20 bg-lead-warm-surface p-4 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-lead-warm/35 hover:shadow-md"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-lead-warm-text opacity-50">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-lead-warm-text opacity-70">
               Warm
             </span>
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-lead-warm/10">
-              <ThermometerSun className="h-3.5 w-3.5 text-lead-warm" />
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-lead-warm/10 transition-colors group-hover:bg-lead-warm/20">
+              <ThermometerSun className="h-3.5 w-3.5 text-lead-warm transition-all group-hover:hidden" />
+              <ArrowUpRight className="hidden h-3.5 w-3.5 text-lead-warm group-hover:block" />
             </div>
           </div>
           <p className="mt-3 font-mono text-4xl font-bold tabular-nums text-lead-warm-text">
             {stats.warm}
           </p>
           <div className="mt-2 flex items-baseline justify-between">
-            <p className="text-xs text-lead-warm-text opacity-50">en seguimiento</p>
+            <p className="text-xs text-lead-warm-text opacity-70">en seguimiento</p>
             {classified > 0 && (
               <span className="font-mono text-[11px] font-semibold tabular-nums text-lead-warm opacity-70">
                 {warmPct}%
@@ -78,21 +82,23 @@ export function StatsCards({ stats }: { stats: Stats }) {
 
         <Link
           href="/dashboard/leads?classification=cold"
-          className="rounded-xl border border-lead-cold/20 bg-lead-cold-surface p-4 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-lead-cold/35 hover:shadow-md"
+          aria-label={`Ver ${stats.cold} leads de bajo interés (Cold)`}
+          className="group rounded-xl border border-lead-cold/20 bg-lead-cold-surface p-4 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:border-lead-cold/35 hover:shadow-md"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-lead-cold-text opacity-50">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-lead-cold-text opacity-70">
               Cold
             </span>
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-lead-cold/10">
-              <Snowflake className="h-3.5 w-3.5 text-lead-cold" />
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-lead-cold/10 transition-colors group-hover:bg-lead-cold/20">
+              <Snowflake className="h-3.5 w-3.5 text-lead-cold transition-all group-hover:hidden" />
+              <ArrowUpRight className="hidden h-3.5 w-3.5 text-lead-cold group-hover:block" />
             </div>
           </div>
           <p className="mt-3 font-mono text-4xl font-bold tabular-nums text-lead-cold-text">
             {stats.cold}
           </p>
           <div className="mt-2 flex items-baseline justify-between">
-            <p className="text-xs text-lead-cold-text opacity-50">bajo interés</p>
+            <p className="text-xs text-lead-cold-text opacity-70">bajo interés</p>
             {classified > 0 && (
               <span className="font-mono text-[11px] font-semibold tabular-nums text-lead-cold opacity-70">
                 {coldPct}%

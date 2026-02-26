@@ -21,14 +21,22 @@ import {
 type PlanOption = { id: string; name: string; display_name: string; price_usd: number };
 
 const schema = z.object({
-  name: z.string().min(1, "Requerido"),
+  name: z.string().min(1, "Este campo es obligatorio"),
   business_type: z.string().optional(),
-  channel_phone_number: z.string().min(5, "Requerido"),
+  channel_phone_number: z.string().min(5, "Este campo es obligatorio"),
   plan_id: z.string().optional(),
   product_mode: z.enum(["inventory", "catalog"]),
-  catalog_url: z.string().url("URL inválida").optional().or(z.literal("")),
+  catalog_url: z
+    .string()
+    .url("Ingresa una URL válida (ej: https://...)")
+    .optional()
+    .or(z.literal("")),
   active: z.boolean(),
-  sales_prompt: z.string().min(10, "El prompt es muy corto").optional().or(z.literal("")),
+  sales_prompt: z
+    .string()
+    .min(10, "Las instrucciones son muy cortas (mínimo 10 caracteres)")
+    .optional()
+    .or(z.literal("")),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -63,6 +71,7 @@ export function ClientForm({ plans, defaultValues, mode }: Props) {
   });
 
   const productMode = watch("product_mode");
+  const salesPromptValue = watch("sales_prompt") ?? "";
 
   async function onSubmit(values: FormValues) {
     const supabase = getBrowserClient();
@@ -179,7 +188,7 @@ export function ClientForm({ plans, defaultValues, mode }: Props) {
             <SelectContent>
               {plans.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
-                  {p.display_name} (${p.price_usd}/mo)
+                  {p.display_name} (${p.price_usd}/mes)
                 </SelectItem>
               ))}
             </SelectContent>
@@ -196,8 +205,8 @@ export function ClientForm({ plans, defaultValues, mode }: Props) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="inventory">Inventario (DB)</SelectItem>
-              <SelectItem value="catalog">Catálogo (URL)</SelectItem>
+              <SelectItem value="inventory">Inventario gestionado</SelectItem>
+              <SelectItem value="catalog">Catálogo externo (URL)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -234,14 +243,22 @@ export function ClientForm({ plans, defaultValues, mode }: Props) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="sales_prompt">Prompt del agente de ventas</Label>
+        <div className="flex items-baseline justify-between">
+          <Label htmlFor="sales_prompt">Instrucciones del agente</Label>
+          <span className="text-xs text-ink-4 tabular-nums">
+            {salesPromptValue.length} caracteres
+          </span>
+        </div>
         <Textarea
           id="sales_prompt"
           {...register("sales_prompt")}
-          placeholder="Eres un agente de ventas para..."
+          placeholder="Describe cómo debe comportarse el agente: tono, productos que vende, cómo responder preguntas frecuentes..."
           rows={8}
           className="font-mono text-sm"
         />
+        <p className="text-[11px] text-ink-4">
+          Define la personalidad y conocimiento del agente de ventas. Mínimo 10 caracteres.
+        </p>
         {errors.sales_prompt && (
           <p className="text-xs text-red-500">{errors.sales_prompt.message}</p>
         )}

@@ -59,7 +59,7 @@ export function Sidebar({ role }: SidebarProps) {
         {role === "super_admin" && (
           <>
             <div className="px-3 pb-1.5 pt-5 text-[10px] font-semibold uppercase tracking-widest text-ink-4">
-              Admin
+              Administración
             </div>
             {adminLinks.map(({ href, label, icon: Icon }) => (
               <Link

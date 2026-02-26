@@ -33,15 +33,15 @@ export default async function LeadDetailPage({
         Volver a leads
       </Link>
 
-      {/* Bot paused banner */}
-      {lead.bot_paused && (
+      {/* Human active banner */}
+      {lead.status === "human_active" && (
         <div className="flex items-center gap-3 rounded-lg border border-bot-paused/25 bg-bot-paused-surface px-4 py-3">
           <span className="relative flex h-2 w-2 shrink-0">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bot-paused opacity-50" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-bot-paused" />
           </span>
           <p className="text-sm font-medium text-bot-paused-text">
-            Bot pausado — este lead requiere atención manual
+            Atención humana activa — el bot está pausado en este lead
           </p>
         </div>
       )}
@@ -58,6 +58,7 @@ export default async function LeadDetailPage({
           leadId={lead.id}
           botPaused={lead.bot_paused}
           botPausedReason={lead.bot_paused_reason}
+          status={lead.status}
         />
       </div>
 
@@ -74,34 +75,50 @@ export default async function LeadDetailPage({
         </div>
 
         {/* Score — featured */}
-        <div className="rounded-lg border border-signal/20 bg-signal-surface p-4">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-ink-3">Score IA</p>
+        <div
+          className="rounded-lg border border-signal/20 bg-signal-surface p-4"
+          title="Puntaje de interés calculado por IA. 0 = sin interés · 100 = listo para comprar"
+        >
+          <p className="text-[11px] font-medium uppercase tracking-wider text-ink-3">Puntaje IA</p>
           <p className="mt-1 font-mono text-3xl font-bold tabular-nums text-signal">
             {lead.score ?? "—"}
           </p>
           {lead.score !== null && (
-            <div className="mt-2 h-0.5 overflow-hidden rounded-full bg-edge-strong">
-              <div
-                className="h-0.5 rounded-full bg-signal transition-all"
-                style={{ width: `${lead.score}%` }}
-              />
-            </div>
+            <>
+              <div className="mt-2 h-0.5 overflow-hidden rounded-full bg-edge-strong">
+                <div
+                  className="h-0.5 rounded-full bg-signal transition-all"
+                  style={{ width: `${lead.score}%` }}
+                />
+              </div>
+              <p className="mt-1.5 text-[10px] text-ink-4">de 100 — mayor es mejor</p>
+            </>
           )}
         </div>
 
-        {/* Bot state */}
+        {/* Status */}
         <div className="rounded-lg border border-edge bg-surface-raised p-4">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-ink-3">Estado bot</p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-ink-3">Estado</p>
           <div className="mt-2">
-            {lead.bot_paused ? (
+            {lead.status === "human_active" ? (
               <span className="inline-flex items-center gap-1.5 rounded-md border border-bot-paused/25 bg-bot-paused-surface px-2 py-1 text-sm font-medium text-bot-paused-text">
                 <span className="h-1.5 w-1.5 rounded-full bg-bot-paused" />
-                Pausado
+                Atención humana
+              </span>
+            ) : lead.status === "resolved" ? (
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-edge bg-surface px-2 py-1 text-sm font-medium text-ink-3">
+                <span className="h-1.5 w-1.5 rounded-full bg-ink-4" />
+                Resuelto
+              </span>
+            ) : lead.status === "lost" ? (
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-lead-hot/20 bg-lead-hot-surface px-2 py-1 text-sm font-medium text-lead-hot-text">
+                <span className="h-1.5 w-1.5 rounded-full bg-lead-hot" />
+                Perdido
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-md border border-bot-active/25 bg-bot-active-surface px-2 py-1 text-sm font-medium text-bot-active-text">
                 <span className="h-1.5 w-1.5 rounded-full bg-bot-active" />
-                Activo
+                Bot activo
               </span>
             )}
           </div>
@@ -120,9 +137,20 @@ export default async function LeadDetailPage({
       {lead.order_data && (
         <div className="rounded-lg border border-lead-warm/25 bg-lead-warm-surface p-4">
           <p className="text-sm font-semibold text-lead-warm-text">Pedido confirmado</p>
-          <pre className="mt-2 overflow-x-auto text-xs text-lead-warm-text opacity-80">
-            {JSON.stringify(lead.order_data, null, 2)}
-          </pre>
+          <dl className="mt-3 space-y-2">
+            {Object.entries(lead.order_data as Record<string, unknown>).map(([key, value]) => (
+              <div key={key} className="flex flex-wrap gap-x-3 gap-y-0.5">
+                <dt className="shrink-0 text-xs font-medium capitalize text-lead-warm-text opacity-70">
+                  {key.replace(/_/g, " ")}
+                </dt>
+                <dd className="text-xs text-lead-warm-text">
+                  {typeof value === "object" && value !== null
+                    ? JSON.stringify(value)
+                    : String(value ?? "—")}
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
       )}
 
