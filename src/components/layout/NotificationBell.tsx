@@ -67,7 +67,7 @@ export function NotificationBell({ clientId }: NotificationBellProps) {
                       </Badge>
                     ) : (
                       <Badge className="border border-bot-paused/30 bg-bot-paused-surface text-bot-paused-text text-xs hover:bg-bot-paused-surface">
-                        Bot pausado
+                        Agente pausado
                       </Badge>
                     )}
                     <span className="text-xs text-ink-3">
