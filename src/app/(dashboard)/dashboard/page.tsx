@@ -75,6 +75,29 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* Alert banner — bot paused */}
+      {stats.paused > 0 && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-bot-paused/40 bg-bot-paused-surface px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-2.5 w-2.5 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bot-paused opacity-60" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-bot-paused" />
+            </span>
+            <p className="text-sm font-medium text-bot-paused-text">
+              {stats.paused} bot{stats.paused !== 1 ? "s" : ""} pausado
+              {stats.paused !== 1 ? "s" : ""} — requiere
+              {stats.paused !== 1 ? "n" : ""} intervención humana
+            </p>
+          </div>
+          <Link
+            href="/dashboard/leads?paused=true"
+            className="shrink-0 rounded-lg bg-bot-paused px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            Atender ahora
+          </Link>
+        </div>
+      )}
+
       <StatsCards stats={stats} />
 
       {/* Charts */}

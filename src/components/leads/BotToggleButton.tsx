@@ -35,7 +35,7 @@ export function BotToggleButton({ leadId, botPaused, botPausedReason, status }: 
         throw new Error(data.error ?? "Error al actualizar el bot");
       }
 
-      toast.success(botPaused ? "Bot reactivado" : "Bot pausado");
+      toast.success(botPaused ? "Agente reactivado" : "Agente pausado");
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error desconocido");
@@ -59,7 +59,7 @@ export function BotToggleButton({ leadId, botPaused, botPausedReason, status }: 
         ) : (
           <div className="flex items-center gap-2 rounded-md border border-bot-active/25 bg-bot-active-surface px-3 py-1.5">
             <span className="h-2 w-2 rounded-full bg-bot-active" />
-            <span className="text-sm font-medium text-bot-active-text">Bot activo</span>
+            <span className="text-sm font-medium text-bot-active-text">Agente activo</span>
           </div>
         )}
 
@@ -82,7 +82,7 @@ export function BotToggleButton({ leadId, botPaused, botPausedReason, status }: 
           ) : (
             <>
               <PauseCircle className="h-3.5 w-3.5" />
-              {loading ? "Pausando..." : "Pausar bot"}
+              {loading ? "Pausando..." : "Pausar agente"}
             </>
           )}
         </button>

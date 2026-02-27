@@ -37,9 +37,16 @@ export function WeeklySparkline({ data }: WeeklySparklineProps) {
         <h2 className="text-[10px] font-semibold uppercase tracking-widest text-ink-3">
           Últimos 7 días
         </h2>
-        <span className="font-mono text-xs font-semibold tabular-nums text-ink">
-          {total} total
-        </span>
+        <div className="flex items-center gap-3">
+          {n > 0 && total > 0 && (
+            <span className="text-[10px] text-ink-4">
+              ~{Math.round(total / n)}/día
+            </span>
+          )}
+          <span className="font-mono text-xs font-semibold tabular-nums text-ink">
+            {total} total
+          </span>
+        </div>
       </div>
 
       {total === 0 ? (
@@ -94,7 +101,8 @@ export function WeeklySparkline({ data }: WeeklySparklineProps) {
               const isToday = i === n - 1;
 
               return (
-                <g key={i}>
+                <g key={i} style={{ cursor: "default" }}>
+                  <title>{`${dayName} ${d}/${m}: ${p.count} lead${p.count !== 1 ? "s" : ""}`}</title>
                   {/* Count above dot (only when > 0) */}
                   {p.count > 0 && (
                     <text
@@ -119,6 +127,8 @@ export function WeeklySparkline({ data }: WeeklySparklineProps) {
                     strokeWidth="1.5"
                     opacity={isToday ? 1 : 0.7}
                   />
+                  {/* Invisible hit area for tooltip */}
+                  <circle cx={p.x} cy={p.y} r="8" fill="transparent" />
 
                   {/* Day label */}
                   <text

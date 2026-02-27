@@ -25,7 +25,7 @@ import { cn, formatDate } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const statusLabel: Record<string, string> = {
-  bot_active: "Bot activo",
+  bot_active: "Agente activo",
   human_active: "Atención humana",
   resolved: "Resuelto",
   lost: "Perdido",
@@ -125,7 +125,7 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="bot_active">Bot activo</SelectItem>
+            <SelectItem value="bot_active">Agente activo</SelectItem>
             <SelectItem value="human_active">Atención humana</SelectItem>
             <SelectItem value="resolved">Resuelto</SelectItem>
             <SelectItem value="lost">Perdido</SelectItem>

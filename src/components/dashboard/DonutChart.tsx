@@ -75,20 +75,18 @@ export function DonutChart({ hot, warm, cold }: DonutChartProps) {
   };
 
   return (
-    <div className="rounded-xl border border-edge bg-surface-raised p-4 shadow-sm">
+    <div className="flex flex-col rounded-xl border border-edge bg-surface-raised p-4 shadow-sm">
       <h2 className="text-[10px] font-semibold uppercase tracking-widest text-ink-3">
         Distribución
       </h2>
 
-      <div className="mt-3 flex items-center gap-4">
+      <div className="mt-3 flex flex-1 items-center gap-4">
         {/* SVG donut ring */}
         <svg
           role="img"
           aria-label={`Distribución de ${total} leads: ${hot} urgentes, ${warm} en seguimiento, ${cold} fríos`}
           viewBox="0 0 100 100"
-          width="92"
-          height="92"
-          className="shrink-0"
+          className="h-auto w-full max-w-[108px] shrink-0"
         >
           <title>Distribución de leads por temperatura</title>
 

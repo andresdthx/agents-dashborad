@@ -118,7 +118,7 @@ export default async function LeadDetailPage({
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-md border border-bot-active/25 bg-bot-active-surface px-2 py-1 text-sm font-medium text-bot-active-text">
                 <span className="h-1.5 w-1.5 rounded-full bg-bot-active" />
-                Bot activo
+                Agente activo
               </span>
             )}
           </div>

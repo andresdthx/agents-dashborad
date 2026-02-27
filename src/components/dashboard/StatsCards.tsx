@@ -86,7 +86,14 @@ export function StatsCards({ stats }: { stats: Stats }) {
     <div className="space-y-3">
       {/* Temperature trio */}
       <div className="grid grid-cols-3 gap-4">
-        {cards.map((card) => (
+        {classified === 0 ? (
+          <div className="col-span-3 rounded-2xl border border-edge bg-canvas p-6 text-center">
+            <p className="text-sm font-medium text-ink-3">Sin leads clasificados aún</p>
+            <p className="mt-1 text-xs text-ink-4">
+              Los leads se clasificarán automáticamente en hot, warm y cold cuando el bot procese las conversaciones.
+            </p>
+          </div>
+        ) : cards.map((card) => (
           <Link
             key={card.href}
             href={card.href}
@@ -156,7 +163,7 @@ export function StatsCards({ stats }: { stats: Stats }) {
           }`}
         >
           <div>
-            <p className="text-[11px] text-ink-3">Bot pausado</p>
+            <p className="text-[11px] text-ink-3">Agente pausado</p>
             <p
               className={`font-mono text-2xl font-bold tabular-nums ${
                 stats.paused > 0 ? "text-bot-paused-text" : "text-ink"
