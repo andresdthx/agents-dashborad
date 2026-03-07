@@ -5,7 +5,7 @@ import { DonutChart } from "@/components/dashboard/DonutChart";
 import { WeeklySparkline } from "@/components/dashboard/WeeklySparkline";
 import { StatusBars } from "@/components/dashboard/StatusBars";
 import Link from "next/link";
-import { ArrowUpRight, TrendingUp } from "lucide-react";
+import { ArrowUpRight, TrendingUp, ClipboardList } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -63,7 +63,29 @@ export default async function DashboardPage() {
             <p className="font-mono text-4xl font-bold tabular-nums text-lead-hot-text">
               {stats.hot}
             </p>
-            <p className="mt-0.5 text-xs text-ink-3">leads urgentes esperando</p>
+            <p className="mt-0.5 text-xs text-ink-3">leads urgentes (hot)</p>
+            {/* Desglose confirmados vs info pendiente */}
+            {stats.hot > 0 && (
+              <div className="mt-3 flex items-center gap-3 border-t border-edge pt-3">
+                <div>
+                  <p className="text-[10px] text-ink-4">Confirmados</p>
+                  <p className="font-mono text-base font-bold tabular-nums text-lead-hot-text">
+                    {stats.hotConfirmed}
+                  </p>
+                </div>
+                <div className="h-5 w-px bg-edge" />
+                <div>
+                  <p className="text-[10px] text-ink-4">Info pendiente</p>
+                  <p
+                    className={`font-mono text-base font-bold tabular-nums ${
+                      stats.hotPending > 0 ? "text-bot-paused-text" : "text-ink-3"
+                    }`}
+                  >
+                    {stats.hotPending}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
           <Link
             href="/dashboard/leads?classification=hot"
@@ -74,6 +96,25 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Alert banner — hot leads with pending info */}
+      {stats.hotPending > 0 && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-lead-hot/30 bg-lead-hot-surface px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <ClipboardList className="h-4 w-4 shrink-0 text-lead-hot-text" />
+            <p className="text-sm font-medium text-lead-hot-text">
+              {stats.hotPending} lead{stats.hotPending !== 1 ? "s" : ""} hot con información
+              pendiente — se debe recopilar datos antes de cerrar
+            </p>
+          </div>
+          <Link
+            href="/dashboard/leads?classification=hot"
+            className="shrink-0 rounded-lg bg-lead-hot px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            Revisar ahora
+          </Link>
+        </div>
+      )}
 
       {/* Alert banner — bot paused */}
       {stats.paused > 0 && (

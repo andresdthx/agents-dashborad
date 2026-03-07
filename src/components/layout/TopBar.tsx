@@ -71,7 +71,8 @@ export function TopBar({ userEmail, clientId }: TopBarProps) {
     router.refresh();
   }
 
-  const initials = userEmail.slice(0, 2).toUpperCase();
+  const localPart = userEmail.split("@")[0] ?? userEmail;
+  const initials = localPart.slice(0, 2).toUpperCase();
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-edge bg-canvas px-5">

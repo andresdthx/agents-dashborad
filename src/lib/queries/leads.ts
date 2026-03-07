@@ -10,7 +10,7 @@ export async function getLeadStats() {
   const [{ count: total }, { data: byClass }, { count: todayCount }, { count: pausedCount }] =
     await Promise.all([
       supabase.from("leads").select("*", { count: "exact", head: true }),
-      supabase.from("leads").select("classification, bot_paused").not("classification", "is", null),
+      supabase.from("leads").select("classification, score, bot_paused").not("classification", "is", null),
       supabase
         .from("leads")
         .select("*", { count: "exact", head: true })
@@ -27,9 +27,17 @@ export async function getLeadStats() {
   const hotHumanActive =
     byClass?.filter((l) => l.classification === "hot" && l.bot_paused === true).length ?? 0;
 
+  // "Confirmados": hot con score = 100 (pedido confirmado, listo para cerrar).
+  // "Pendientes": hot con score < 100 (interés alto pero falta recopilar información).
+  const hotConfirmed =
+    byClass?.filter((l) => l.classification === "hot" && (l.score ?? 0) >= 100).length ?? 0;
+  const hotPending = hot - hotConfirmed;
+
   return {
     total: total ?? 0,
     hot,
+    hotConfirmed,
+    hotPending,
     warm,
     cold,
     today: todayCount ?? 0,
@@ -60,7 +68,7 @@ export async function getLeads({
   let query = supabase
     .from("leads")
     .select(
-      "id, phone, classification, score, bot_paused, bot_paused_reason, bot_paused_at, status, created_at, updated_at",
+      "id, phone, classification, score, bot_paused, bot_paused_reason, bot_paused_at, status, order_confirmed_at, created_at, updated_at",
       { count: "exact" }
     )
     .order("updated_at", { ascending: false, nullsFirst: false })

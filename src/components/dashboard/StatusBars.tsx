@@ -47,32 +47,32 @@ export function StatusBars({ statusCounts }: StatusBarsProps) {
       </Link>
 
       {/* Requieren atención humana */}
-      <div
-        className={`rounded-2xl border bg-surface-raised p-5 shadow-sm ${
-          human_active > 0 ? "border-bot-paused/30" : "border-edge"
-        }`}
-      >
-        <p className="text-sm font-semibold text-ink">Requieren atención</p>
-        <p className="mt-0.5 text-xs text-ink-3">leads con intervención humana activa</p>
-        <p
-          className={`mt-4 font-mono text-3xl font-bold tabular-nums ${
-            human_active > 0 ? "text-bot-paused-text" : "text-ink"
-          }`}
+      {human_active > 0 ? (
+        <Link
+          href="/dashboard/leads?paused=true"
+          className="group rounded-2xl border border-bot-paused/30 bg-surface-raised p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
         >
-          {human_active.toLocaleString()}
-        </p>
-        <p className="mt-1 text-xs text-ink-3">conversaciones pendientes</p>
-        {human_active > 0 ? (
-          <Link
-            href="/dashboard/leads?paused=true"
-            className="mt-3 inline-flex items-center rounded-lg bg-bot-paused px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
-          >
-            Atender ahora
-          </Link>
-        ) : (
+          <p className="text-sm font-semibold text-ink">Requieren atención</p>
+          <p className="mt-0.5 text-xs text-ink-3">leads con intervención humana activa</p>
+          <p className="mt-4 font-mono text-3xl font-bold tabular-nums text-bot-paused-text">
+            {human_active.toLocaleString()}
+          </p>
+          <p className="mt-1 text-xs text-ink-3">conversaciones pendientes</p>
+          <p className="mt-3 text-xs font-medium text-signal opacity-0 transition-opacity group-hover:opacity-100">
+            Atender ahora →
+          </p>
+        </Link>
+      ) : (
+        <div className="rounded-2xl border border-edge bg-surface-raised p-5 shadow-sm">
+          <p className="text-sm font-semibold text-ink">Requieren atención</p>
+          <p className="mt-0.5 text-xs text-ink-3">leads con intervención humana activa</p>
+          <p className="mt-4 font-mono text-3xl font-bold tabular-nums text-ink">
+            {human_active.toLocaleString()}
+          </p>
+          <p className="mt-1 text-xs text-ink-3">conversaciones pendientes</p>
           <p className="mt-3 text-xs text-ink-4">Sin pendientes</p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Resueltos + Perdidos */}
       <Link

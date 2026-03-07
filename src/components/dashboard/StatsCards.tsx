@@ -3,6 +3,8 @@ import Link from "next/link";
 interface Stats {
   total: number;
   hot: number;
+  hotConfirmed: number;
+  hotPending: number;
   warm: number;
   cold: number;
   today: number;
@@ -43,19 +45,7 @@ export function StatsCards({ stats }: { stats: Stats }) {
   const coldPct = classified ? 100 - hotPct - warmPct : 0;
   const maxVal = Math.max(stats.hot, stats.warm, stats.cold, 1);
 
-  const cards = [
-    {
-      href: "/dashboard/leads?classification=hot",
-      title: "Leads urgentes",
-      subtitle: "clasificados como hot",
-      count: stats.hot,
-      pct: hotPct,
-      color: "var(--color-lead-hot)",
-      border: "border-lead-hot/20",
-      bg: "bg-lead-hot-surface",
-      text: "text-lead-hot-text",
-      extra: stats.hotHumanActive > 0 ? `${stats.hotHumanActive} en atención humana` : null,
-    },
+  const warmColdCards = [
     {
       href: "/dashboard/leads?classification=warm",
       title: "En seguimiento",
@@ -66,7 +56,6 @@ export function StatsCards({ stats }: { stats: Stats }) {
       border: "border-lead-warm/20",
       bg: "bg-lead-warm-surface",
       text: "text-lead-warm-text",
-      extra: null,
     },
     {
       href: "/dashboard/leads?classification=cold",
@@ -78,7 +67,6 @@ export function StatsCards({ stats }: { stats: Stats }) {
       border: "border-lead-cold/20",
       bg: "bg-lead-cold-surface",
       text: "text-lead-cold-text",
-      extra: null,
     },
   ];
 
@@ -93,37 +81,94 @@ export function StatsCards({ stats }: { stats: Stats }) {
               Los leads se clasificarán automáticamente en hot, warm y cold cuando el bot procese las conversaciones.
             </p>
           </div>
-        ) : cards.map((card) => (
-          <Link
-            key={card.href}
-            href={card.href}
-            className={`group rounded-2xl border ${card.border} ${card.bg} p-5 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md`}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <p className={`text-sm font-semibold ${card.text}`}>{card.title}</p>
-                <p className={`mt-0.5 text-[11px] ${card.text} opacity-60`}>{card.subtitle}</p>
+        ) : (
+          <>
+            {/* Hot card — split into confirmed (score=100) vs pending (score<100) */}
+            <Link
+              href="/dashboard/leads?classification=hot"
+              className="group rounded-2xl border border-lead-hot/20 bg-lead-hot-surface p-5 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-lead-hot-text">Leads urgentes</p>
+                  <p className="mt-0.5 text-[11px] text-lead-hot-text opacity-60">
+                    clasificados como hot
+                  </p>
+                </div>
+                <MiniBarChart value={stats.hot} max={maxVal} color="var(--color-lead-hot)" />
               </div>
-              <MiniBarChart value={card.count} max={maxVal} color={card.color} />
-            </div>
-            <div className="mt-4">
-              <p className={`font-mono text-4xl font-bold tabular-nums ${card.text}`}>
-                {card.count}
-              </p>
-              <div className="mt-1.5 flex items-center justify-between">
-                <p className={`text-xs ${card.text} opacity-60`}>leads activos</p>
-                {classified > 0 && (
-                  <span className={`font-mono text-xs font-semibold tabular-nums ${card.text} opacity-70`}>
-                    {card.pct}%
-                  </span>
+              <div className="mt-4">
+                <p className="font-mono text-4xl font-bold tabular-nums text-lead-hot-text">
+                  {stats.hot}
+                </p>
+                <div className="mt-1.5 flex items-center justify-between">
+                  <p className="text-xs text-lead-hot-text opacity-60">leads activos</p>
+                  {classified > 0 && (
+                    <span className="font-mono text-xs font-semibold tabular-nums text-lead-hot-text opacity-70">
+                      {hotPct}%
+                    </span>
+                  )}
+                </div>
+                {/* Desglose confirmed vs pending */}
+                {stats.hot > 0 && (
+                  <div className="mt-3 flex items-center gap-2 border-t border-lead-hot/15 pt-3">
+                    <div className="flex-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-lead-hot-text opacity-60">
+                        Confirmados
+                      </p>
+                      <p className="font-mono text-lg font-bold tabular-nums text-lead-hot-text">
+                        {stats.hotConfirmed}
+                      </p>
+                    </div>
+                    <div className="h-6 w-px bg-lead-hot/20" />
+                    <div className="flex-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-lead-hot-text opacity-60">
+                        Info pendiente
+                      </p>
+                      <p className="font-mono text-lg font-bold tabular-nums text-lead-hot-text">
+                        {stats.hotPending}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {stats.hotHumanActive > 0 && (
+                  <p className="mt-1 text-xs text-bot-paused-text">
+                    {stats.hotHumanActive} en atención humana
+                  </p>
                 )}
               </div>
-              {card.extra && (
-                <p className="mt-1 text-xs text-bot-paused-text">{card.extra}</p>
-              )}
-            </div>
-          </Link>
-        ))}
+            </Link>
+
+            {warmColdCards.map((card) => (
+              <Link
+                key={card.href}
+                href={card.href}
+                className={`group rounded-2xl border ${card.border} ${card.bg} p-5 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className={`text-sm font-semibold ${card.text}`}>{card.title}</p>
+                    <p className={`mt-0.5 text-[11px] ${card.text} opacity-60`}>{card.subtitle}</p>
+                  </div>
+                  <MiniBarChart value={card.count} max={maxVal} color={card.color} />
+                </div>
+                <div className="mt-4">
+                  <p className={`font-mono text-4xl font-bold tabular-nums ${card.text}`}>
+                    {card.count}
+                  </p>
+                  <div className="mt-1.5 flex items-center justify-between">
+                    <p className={`text-xs ${card.text} opacity-60`}>leads activos</p>
+                    {classified > 0 && (
+                      <span className={`font-mono text-xs font-semibold tabular-nums ${card.text} opacity-70`}>
+                        {card.pct}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </>
+        )}
       </div>
 
       {/* Distribution bar */}
