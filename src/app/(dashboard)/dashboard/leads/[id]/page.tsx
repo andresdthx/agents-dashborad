@@ -6,7 +6,7 @@ import { ConversationThread } from "@/components/leads/ConversationThread";
 import { BotToggleButton } from "@/components/leads/BotToggleButton";
 import { formatDateTime } from "@/lib/utils";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ClipboardList, CheckCircle2 } from "lucide-react";
 
 export default async function LeadDetailPage({
   params,
@@ -46,6 +46,29 @@ export default async function LeadDetailPage({
         </div>
       )}
 
+      {/* Hot lead — confirmed order banner */}
+      {lead.classification === "hot" &&
+        (lead.score ?? 0) >= 100 &&
+        lead.order_confirmed_at !== null && (
+          <div className="flex items-center gap-3 rounded-lg border border-lead-hot/25 bg-lead-hot-surface px-4 py-3">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-lead-hot-text" />
+            <p className="text-sm font-medium text-lead-hot-text">
+              Pedido confirmado — este lead está listo para cerrar la venta
+            </p>
+          </div>
+        )}
+
+      {/* Hot lead — pending info banner */}
+      {lead.classification === "hot" && (lead.score ?? 0) < 100 && (
+        <div className="flex items-center gap-3 rounded-lg border border-lead-hot/25 bg-lead-hot-surface px-4 py-3">
+          <ClipboardList className="h-4 w-4 shrink-0 text-lead-hot-text" />
+          <p className="text-sm font-medium text-lead-hot-text">
+            Lead urgente con información pendiente — recopila los datos que faltan antes de cerrar
+            (puntaje actual: {lead.score ?? 0}/100)
+          </p>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -70,7 +93,14 @@ export default async function LeadDetailPage({
             Clasificación
           </p>
           <div className="mt-2">
-            <ClassificationBadge classification={lead.classification} />
+            <ClassificationBadge
+              classification={lead.classification}
+              confirmed={
+                lead.classification === "hot"
+                  ? (lead.score ?? 0) >= 100 || lead.order_confirmed_at !== null
+                  : undefined
+              }
+            />
           </div>
         </div>
 

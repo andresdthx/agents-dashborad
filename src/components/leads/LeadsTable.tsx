@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import type { Lead } from "@/types/database";
 import { ClassificationBadge } from "./ClassificationBadge";
 import {
@@ -58,6 +58,7 @@ interface Props {
     | "bot_paused_reason"
     | "status"
     | "created_at"
+    | "order_confirmed_at"
   >[];
   total: number;
   page: number;
@@ -73,6 +74,7 @@ const rowTint: Record<string, string> = {
 export function LeadsTable({ leads, total, page, pageSize }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updateParam = useCallback(
     (key: string, value: string | undefined) => {
@@ -88,6 +90,16 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
     [router, searchParams]
   );
 
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = setTimeout(() => {
+        updateParam("search", value || undefined);
+      }, 350);
+    },
+    [updateParam]
+  );
+
   const totalPages = Math.ceil(total / pageSize);
 
   return (
@@ -97,7 +109,7 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
         <Input
           placeholder="Buscar por teléfono..."
           defaultValue={searchParams.get("search") ?? ""}
-          onChange={(e) => updateParam("search", e.target.value || undefined)}
+          onChange={(e) => handleSearchChange(e.target.value)}
           className="w-52 bg-surface-raised border-edge text-ink placeholder:text-ink-4 focus-visible:ring-signal"
         />
 
@@ -177,7 +189,14 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <ClassificationBadge classification={lead.classification} />
+                    <ClassificationBadge
+                      classification={lead.classification}
+                      confirmed={
+                        lead.classification === "hot"
+                          ? (lead.score ?? 0) >= 100 || lead.order_confirmed_at !== null
+                          : undefined
+                      }
+                    />
                   </TableCell>
                   <TableCell className="text-center">
                     {lead.score !== null ? (
