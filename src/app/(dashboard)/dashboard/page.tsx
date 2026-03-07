@@ -1,9 +1,11 @@
 import { getLeadStats, getLeadChartData } from "@/lib/queries/leads";
+import { getGlobalStats, getClientsSummary } from "@/lib/queries/clients";
 import { createClient } from "@/lib/supabase/server";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { DonutChart } from "@/components/dashboard/DonutChart";
 import { WeeklySparkline } from "@/components/dashboard/WeeklySparkline";
 import { StatusBars } from "@/components/dashboard/StatusBars";
+import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
 import Link from "next/link";
 import { ArrowUpRight, TrendingUp, ClipboardList } from "lucide-react";
 
@@ -13,8 +15,40 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const rawName = user?.email?.split("@")[0]?.split(".")[0] ?? "usuario";
-  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+  const rawName =
+    user?.user_metadata?.full_name ??
+    user?.email?.split("@")[0]?.split(".")[0] ??
+    "usuario";
+  const displayName =
+    typeof rawName === "string"
+      ? rawName.charAt(0).toUpperCase() + rawName.slice(1)
+      : "usuario";
+
+  // Obtener rol del usuario
+  const { data: clientUserData } = await supabase
+    .from("client_users")
+    .select("role, client_id")
+    .eq("user_id", user?.id ?? "")
+    .limit(1)
+    .single();
+
+  const isSuperAdmin = clientUserData?.role === "super_admin";
+
+  // Si es super_admin, cargar métricas globales
+  if (isSuperAdmin) {
+    const [globalStats, clientsSummary] = await Promise.all([
+      getGlobalStats(),
+      getClientsSummary(),
+    ]);
+
+    return (
+      <AdminDashboard
+        globalStats={globalStats}
+        clientsSummary={clientsSummary}
+        displayName={displayName}
+      />
+    );
+  }
 
   const [stats, chartData] = await Promise.all([getLeadStats(), getLeadChartData()]);
 
@@ -40,7 +74,7 @@ export default async function DashboardPage() {
         <div className="flex flex-col justify-between rounded-2xl border border-edge bg-surface-raised p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-3">
-              Estado del bot
+              Estado del agente
             </span>
             <span
               className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${

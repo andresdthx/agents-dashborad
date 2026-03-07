@@ -7,6 +7,11 @@ interface SearchParams {
   paused?: string;
   status?: string;
   search?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  minScore?: string;
+  sortBy?: string;
+  sortDir?: string;
 }
 
 export default async function LeadsPage({
@@ -24,6 +29,16 @@ export default async function LeadsPage({
   const botPaused =
     params.paused === "true" ? true : params.paused === "false" ? false : undefined;
 
+  const validSortFields = ["score", "created_at", "classification", "updated_at"] as const;
+  type ValidSortField = (typeof validSortFields)[number];
+  const rawSortBy = params.sortBy as string | undefined;
+  const sortBy: ValidSortField = validSortFields.includes(rawSortBy as ValidSortField)
+    ? (rawSortBy as ValidSortField)
+    : "updated_at";
+
+  const sortDir = params.sortDir === "asc" ? "asc" : "desc";
+  const minScore = params.minScore ? Number(params.minScore) : undefined;
+
   const { leads, total } = await getLeads({
     page,
     pageSize,
@@ -31,12 +46,17 @@ export default async function LeadsPage({
     botPaused,
     status,
     search: params.search,
+    dateFrom: params.dateFrom,
+    dateTo: params.dateTo,
+    minScore: !isNaN(minScore ?? NaN) ? minScore : undefined,
+    sortBy,
+    sortDir,
   });
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-lg font-semibold text-ink">Leads</h1>
+        <h1 className="text-lg font-semibold text-ink">Clientes</h1>
         <p className="mt-0.5 text-sm text-ink-3">
           Todos los leads calificados por el bot
         </p>

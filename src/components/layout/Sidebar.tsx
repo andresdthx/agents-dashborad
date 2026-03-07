@@ -11,7 +11,7 @@ interface SidebarProps {
 
 const clientLinks = [
   { href: "/dashboard", label: "Inicio", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/leads", label: "Leads", icon: Users },
+  { href: "/dashboard/leads", label: "Clientes", icon: Users },
 ];
 
 const adminLinks = [

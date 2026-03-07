@@ -3,7 +3,8 @@
     "allow": [
       "Bash(node:*)",
       "Bash(head:*)",
-      "Bash(cd /c/Users/andres.canchila_prag/Documents/personal_devs/web && npx tsc --noEmit 2>&1)"
+      "Bash(cd /c/Users/andres.canchila_prag/Documents/personal_devs/web && npx tsc --noEmit 2>&1)",
+      "Bash(curl:*)"
     ]
   }
 }

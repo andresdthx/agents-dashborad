@@ -64,6 +64,7 @@ export type Database = {
           extracted_data: Record<string, unknown> | null;
           order_data: Record<string, unknown> | null;
           order_confirmed_at: string | null;
+          reasoning: string | null;
           created_at: string;
           updated_at: string | null;
         };
@@ -158,7 +159,7 @@ export type Database = {
         Update: {
           name?: string;
           content?: string;
-          agent_type?: "sales" | "intent" | "vision";
+          agent_type?: "sales" | "intent" | "vision" | "classifier";
           client_id?: string | null;
           is_active?: boolean;
           version?: number;
