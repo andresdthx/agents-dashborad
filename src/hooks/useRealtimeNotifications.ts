@@ -75,34 +75,6 @@ export function useRealtimeNotifications(clientId: string | null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         "postgres_changes" as any,
         {
-          event: "INSERT",
-          schema: "public",
-          table: "leads",
-          ...(filter ? { filter } : {}),
-        },
-        (payload: { new: { id: string; phone: string; classification: string } }) => {
-          const record = payload.new;
-          if (record.classification === "hot") {
-            setNotifications((prev) =>
-              [
-                {
-                  id: crypto.randomUUID(),
-                  type: "hot_lead" as const,
-                  leadId: record.id,
-                  phone: record.phone,
-                  timestamp: new Date(),
-                  read: false,
-                },
-                ...prev,
-              ].slice(0, 20)
-            );
-          }
-        }
-      )
-      .on(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        "postgres_changes" as any,
-        {
           event: "UPDATE",
           schema: "public",
           table: "leads",

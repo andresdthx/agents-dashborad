@@ -8,6 +8,7 @@ interface Stats {
   warm: number;
   cold: number;
   today: number;
+  yesterday: number;
   paused: number;
   hotHumanActive: number;
 }
@@ -35,6 +36,22 @@ function MiniBarChart({ value, max, color }: { value: number; max: number; color
         );
       })}
     </svg>
+  );
+}
+
+function TodayDelta({ today, yesterday }: { today: number; yesterday: number }) {
+  const delta = today - yesterday;
+  if (delta === 0) return <span className="text-ink-4 text-[10px]">= ayer</span>;
+  const positive = delta > 0;
+  return (
+    <span
+      className={`text-[10px] font-semibold tabular-nums ${
+        positive ? "text-bot-active-text" : "text-lead-cold-text"
+      }`}
+    >
+      {positive ? "+" : ""}
+      {delta} vs ayer
+    </span>
   );
 }
 
@@ -90,7 +107,7 @@ export function StatsCards({ stats }: { stats: Stats }) {
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-lead-hot-text">Leads urgentes</p>
+                  <p className="text-sm font-semibold text-lead-hot-text">Alto interés</p>
                   <p className="mt-0.5 text-[11px] text-lead-hot-text opacity-60">
                     clasificados como hot
                   </p>
@@ -196,6 +213,7 @@ export function StatsCards({ stats }: { stats: Stats }) {
           <div>
             <p className="text-[11px] text-ink-3">Hoy</p>
             <p className="font-mono text-2xl font-bold tabular-nums text-ink">{stats.today}</p>
+            <TodayDelta today={stats.today} yesterday={stats.yesterday} />
           </div>
         </div>
 

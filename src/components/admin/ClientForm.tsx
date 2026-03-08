@@ -25,8 +25,7 @@ const schema = z.object({
   business_type: z.string().optional(),
   channel_phone_number: z.string().min(5, "Este campo es obligatorio"),
   plan_id: z.string().optional(),
-  product_mode: z.enum(["inventory", "catalog"]),
-  catalog_url: z
+  consult_catalog_url: z
     .string()
     .url("Ingresa una URL válida (ej: https://...)")
     .optional()
@@ -43,7 +42,7 @@ type FormValues = z.infer<typeof schema>;
 
 interface Props {
   plans: PlanOption[];
-  defaultValues?: Partial<FormValues & { id: string; promptContent?: string }>;
+  defaultValues?: Partial<FormValues & { id: string; promptContent?: string; consult_catalog_url?: string }>;
   mode: "create" | "edit";
 }
 
@@ -63,14 +62,12 @@ export function ClientForm({ plans, defaultValues, mode }: Props) {
       business_type: defaultValues?.business_type ?? "",
       channel_phone_number: defaultValues?.channel_phone_number ?? "",
       plan_id: defaultValues?.plan_id ?? "",
-      product_mode: defaultValues?.product_mode ?? "inventory",
-      catalog_url: defaultValues?.catalog_url ?? "",
+      consult_catalog_url: defaultValues?.consult_catalog_url ?? "",
       active: defaultValues?.active ?? true,
       sales_prompt: defaultValues?.promptContent ?? "",
     },
   });
 
-  const productMode = watch("product_mode");
   const salesPromptValue = watch("sales_prompt") ?? "";
 
   async function onSubmit(values: FormValues) {
@@ -86,8 +83,7 @@ export function ClientForm({ plans, defaultValues, mode }: Props) {
             business_type: values.business_type || null,
             channel_phone_number: values.channel_phone_number,
             plan_id: values.plan_id || null,
-            product_mode: values.product_mode,
-            catalog_url: values.catalog_url || null,
+            consult_catalog_url: values.consult_catalog_url || null,
             active: values.active,
           })
           .select()
@@ -105,7 +101,6 @@ export function ClientForm({ plans, defaultValues, mode }: Props) {
               agent_type: "sales",
               client_id: client.id,
               is_active: true,
-              version: 1,
             })
             .select()
             .single();
@@ -129,8 +124,7 @@ export function ClientForm({ plans, defaultValues, mode }: Props) {
             business_type: values.business_type || null,
             channel_phone_number: values.channel_phone_number,
             plan_id: values.plan_id || null,
-            product_mode: values.product_mode,
-            catalog_url: values.catalog_url || null,
+            consult_catalog_url: values.consult_catalog_url || null,
             active: values.active,
           })
           .eq("id", defaultValues?.id ?? "");
@@ -196,34 +190,16 @@ export function ClientForm({ plans, defaultValues, mode }: Props) {
         </div>
 
         <div className="space-y-1.5">
-          <Label>Modo de productos</Label>
-          <Select
-            defaultValue={productMode}
-            onValueChange={(v) => setValue("product_mode", v as "inventory" | "catalog")}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="inventory">Inventario gestionado</SelectItem>
-              <SelectItem value="catalog">Catálogo externo (URL)</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label htmlFor="consult_catalog_url">URL del catálogo</Label>
+          <Input
+            id="consult_catalog_url"
+            {...register("consult_catalog_url")}
+            placeholder="https://catalogo.mitienda.com"
+          />
+          {errors.consult_catalog_url && (
+            <p className="text-xs text-red-500">{errors.consult_catalog_url.message}</p>
+          )}
         </div>
-
-        {productMode === "catalog" && (
-          <div className="space-y-1.5">
-            <Label htmlFor="catalog_url">URL del catálogo</Label>
-            <Input
-              id="catalog_url"
-              {...register("catalog_url")}
-              placeholder="https://catalogo.mitienda.com"
-            />
-            {errors.catalog_url && (
-              <p className="text-xs text-red-500">{errors.catalog_url.message}</p>
-            )}
-          </div>
-        )}
 
         <div className="space-y-1.5">
           <Label>Estado</Label>

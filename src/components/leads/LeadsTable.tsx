@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn, formatDate } from "@/lib/utils";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 
 const statusLabel: Record<string, string> = {
   bot_active: "Agente activo",
@@ -37,15 +37,17 @@ const statusStyle: Record<string, string> = {
   human_active:
     "border-bot-paused/25 bg-bot-paused-surface text-bot-paused-text",
   resolved: "border-edge bg-surface text-ink-3",
-  lost: "border-lead-hot/20 bg-lead-hot-surface text-lead-hot-text",
+  lost: "border-edge bg-surface text-ink-3",
 };
 
 const statusDot: Record<string, string> = {
   bot_active: "bg-bot-active",
   human_active: "bg-bot-paused",
   resolved: "bg-ink-4",
-  lost: "bg-lead-hot",
+  lost: "bg-ink-4",
 };
+
+type SortField = "score" | "created_at" | "classification";
 
 interface Props {
   leads: Pick<
@@ -100,6 +102,35 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
     [updateParam]
   );
 
+  const currentSortBy = (searchParams.get("sortBy") as SortField | null) ?? null;
+  const currentSortDir = searchParams.get("sortDir") ?? "desc";
+
+  const handleSort = useCallback(
+    (field: SortField) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (currentSortBy === field) {
+        // toggle direction
+        params.set("sortDir", currentSortDir === "asc" ? "desc" : "asc");
+      } else {
+        params.set("sortBy", field);
+        params.set("sortDir", "desc");
+      }
+      params.set("page", "1");
+      router.push(`?${params.toString()}`, { scroll: false });
+    },
+    [router, searchParams, currentSortBy, currentSortDir]
+  );
+
+  function SortIcon({ field }: { field: SortField }) {
+    if (currentSortBy !== field)
+      return <ArrowUpDown className="ml-1 inline h-3 w-3 text-ink-4" />;
+    return currentSortDir === "asc" ? (
+      <ArrowUp className="ml-1 inline h-3 w-3 text-signal" />
+    ) : (
+      <ArrowDown className="ml-1 inline h-3 w-3 text-signal" />
+    );
+  }
+
   const totalPages = Math.ceil(total / pageSize);
 
   return (
@@ -144,6 +175,51 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
           </SelectContent>
         </Select>
 
+        {/* Filtro fecha desde */}
+        <div className="flex items-center gap-1">
+          <label className="text-[11px] text-ink-3" htmlFor="filter-date-from">
+            Desde
+          </label>
+          <Input
+            id="filter-date-from"
+            type="date"
+            defaultValue={searchParams.get("dateFrom") ?? ""}
+            onChange={(e) => updateParam("dateFrom", e.target.value || undefined)}
+            className="w-36 border-edge bg-surface-raised text-ink focus-visible:ring-signal"
+          />
+        </div>
+
+        {/* Filtro fecha hasta */}
+        <div className="flex items-center gap-1">
+          <label className="text-[11px] text-ink-3" htmlFor="filter-date-to">
+            Hasta
+          </label>
+          <Input
+            id="filter-date-to"
+            type="date"
+            defaultValue={searchParams.get("dateTo") ?? ""}
+            onChange={(e) => updateParam("dateTo", e.target.value || undefined)}
+            className="w-36 border-edge bg-surface-raised text-ink focus-visible:ring-signal"
+          />
+        </div>
+
+        {/* Filtro puntaje mínimo */}
+        <div className="flex items-center gap-1">
+          <label className="text-[11px] text-ink-3" htmlFor="filter-min-score">
+            Puntaje mín.
+          </label>
+          <Input
+            id="filter-min-score"
+            type="number"
+            min={0}
+            max={100}
+            placeholder="0"
+            defaultValue={searchParams.get("minScore") ?? ""}
+            onChange={(e) => updateParam("minScore", e.target.value || undefined)}
+            className="w-16 border-edge bg-surface-raised text-ink focus-visible:ring-signal"
+          />
+        </div>
+
         <span className="ml-auto text-xs text-ink-3 tabular-nums">
           {total} resultado{total !== 1 ? "s" : ""}
         </span>
@@ -155,10 +231,37 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
           <TableHeader>
             <TableRow className="border-edge hover:bg-transparent">
               <TableHead className="text-ink-3 font-medium">Teléfono</TableHead>
-              <TableHead className="text-ink-3 font-medium">Clasificación</TableHead>
-              <TableHead className="text-center text-ink-3 font-medium">Puntaje IA</TableHead>
+              <TableHead className="text-ink-3 font-medium">
+                <button
+                  onClick={() => handleSort("classification")}
+                  className="inline-flex items-center transition-colors hover:text-ink"
+                  aria-label="Ordenar por clasificación"
+                >
+                  Clasificación
+                  <SortIcon field="classification" />
+                </button>
+              </TableHead>
+              <TableHead className="text-center text-ink-3 font-medium">
+                <button
+                  onClick={() => handleSort("score")}
+                  className="inline-flex items-center transition-colors hover:text-ink"
+                  aria-label="Ordenar por puntaje IA"
+                >
+                  Puntaje IA
+                  <SortIcon field="score" />
+                </button>
+              </TableHead>
               <TableHead className="text-ink-3 font-medium">Estado</TableHead>
-              <TableHead className="text-ink-3 font-medium">Fecha</TableHead>
+              <TableHead className="text-ink-3 font-medium">
+                <button
+                  onClick={() => handleSort("created_at")}
+                  className="inline-flex items-center transition-colors hover:text-ink"
+                  aria-label="Ordenar por fecha"
+                >
+                  Fecha
+                  <SortIcon field="created_at" />
+                </button>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -216,12 +319,22 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                     )}
                   </TableCell>
                   <TableCell>
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-medium ${statusStyle[lead.status] ?? statusStyle.bot_active}`}
-                    >
-                      <span className={`h-1.5 w-1.5 rounded-full ${statusDot[lead.status] ?? statusDot.bot_active}`} />
-                      {statusLabel[lead.status] ?? lead.status}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-medium ${statusStyle[lead.status] ?? statusStyle.bot_active}`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${statusDot[lead.status] ?? statusDot.bot_active}`} />
+                        {statusLabel[lead.status] ?? lead.status}
+                      </span>
+                      {lead.bot_paused && lead.bot_paused_reason && (
+                        <span
+                          className="max-w-[180px] truncate text-[11px] text-bot-paused-text"
+                          title={lead.bot_paused_reason}
+                        >
+                          {lead.bot_paused_reason}
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="font-mono text-xs tabular-nums text-ink-3">
                     {formatDate(lead.created_at)}

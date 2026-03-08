@@ -12,12 +12,17 @@ export type Database = {
           active: boolean;
           channel_phone_number: string;
           plan_id: string | null;
-          product_mode: "inventory" | "catalog";
-          catalog_url: string | null;
-          llm_temperature: number;
           conversation_history_limit: number;
           sales_prompt_id: string | null;
           notification_phone: string | null;
+          consult_catalog_url: string | null;
+          show_catalog_url: string | null;
+          debounce_ms: number | null;
+          capabilities: Record<string, unknown> | null;
+          keywords: unknown[] | null;
+          brands: unknown[] | null;
+          categories: unknown[] | null;
+          business_description: string | null;
           created_at: string;
           updated_at: string | null;
         };
@@ -27,12 +32,17 @@ export type Database = {
           business_type?: string | null;
           active?: boolean;
           plan_id?: string | null;
-          product_mode?: "inventory" | "catalog";
-          catalog_url?: string | null;
-          llm_temperature?: number;
           conversation_history_limit?: number;
           sales_prompt_id?: string | null;
           notification_phone?: string | null;
+          consult_catalog_url?: string | null;
+          show_catalog_url?: string | null;
+          debounce_ms?: number | null;
+          capabilities?: Record<string, unknown> | null;
+          keywords?: unknown[] | null;
+          brands?: unknown[] | null;
+          categories?: unknown[] | null;
+          business_description?: string | null;
         };
         Update: {
           name?: string;
@@ -40,12 +50,17 @@ export type Database = {
           business_type?: string | null;
           active?: boolean;
           plan_id?: string | null;
-          product_mode?: "inventory" | "catalog";
-          catalog_url?: string | null;
-          llm_temperature?: number;
           conversation_history_limit?: number;
           sales_prompt_id?: string | null;
           notification_phone?: string | null;
+          consult_catalog_url?: string | null;
+          show_catalog_url?: string | null;
+          debounce_ms?: number | null;
+          capabilities?: Record<string, unknown> | null;
+          keywords?: unknown[] | null;
+          brands?: unknown[] | null;
+          categories?: unknown[] | null;
+          business_description?: string | null;
         };
         Relationships: [];
       };
@@ -64,6 +79,7 @@ export type Database = {
           extracted_data: Record<string, unknown> | null;
           order_data: Record<string, unknown> | null;
           order_confirmed_at: string | null;
+          reasoning: string | null;
           created_at: string;
           updated_at: string | null;
         };
@@ -141,8 +157,6 @@ export type Database = {
           agent_type: "sales" | "intent" | "vision" | "classifier";
           client_id: string | null;
           is_active: boolean;
-          version: number;
-          description: string | null;
           created_at: string;
           updated_at: string | null;
         };
@@ -152,17 +166,13 @@ export type Database = {
           agent_type: "sales" | "intent" | "vision" | "classifier";
           client_id?: string | null;
           is_active?: boolean;
-          version?: number;
-          description?: string | null;
         };
         Update: {
           name?: string;
           content?: string;
-          agent_type?: "sales" | "intent" | "vision";
+          agent_type?: "sales" | "intent" | "vision" | "classifier";
           client_id?: string | null;
           is_active?: boolean;
-          version?: number;
-          description?: string | null;
         };
         Relationships: [];
       };
@@ -171,6 +181,7 @@ export type Database = {
           id: string;
           name: string;
           display_name: string;
+          llm_model_id: string;
           price_usd: number;
           is_active: boolean;
           created_at: string;
@@ -178,11 +189,13 @@ export type Database = {
         Insert: {
           name: string;
           display_name: string;
+          llm_model_id: string;
           price_usd: number;
           is_active?: boolean;
         };
         Update: {
           display_name?: string;
+          llm_model_id?: string;
           price_usd?: number;
           is_active?: boolean;
         };

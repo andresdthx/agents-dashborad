@@ -141,8 +141,8 @@ export default async function LeadDetailPage({
                 Resuelto
               </span>
             ) : lead.status === "lost" ? (
-              <span className="inline-flex items-center gap-1.5 rounded-md border border-lead-hot/20 bg-lead-hot-surface px-2 py-1 text-sm font-medium text-lead-hot-text">
-                <span className="h-1.5 w-1.5 rounded-full bg-lead-hot" />
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-edge bg-surface px-2 py-1 text-sm font-medium text-ink-3">
+                <span className="h-1.5 w-1.5 rounded-full bg-ink-4" />
                 Perdido
               </span>
             ) : (
@@ -162,6 +162,37 @@ export default async function LeadDetailPage({
           </p>
         </div>
       </div>
+
+      {/* Extracted data — perfil del lead */}
+      {lead.extracted_data && Object.keys(lead.extracted_data).length > 0 && (
+        <div className="rounded-lg border border-edge bg-surface-raised p-4">
+          <p className="text-sm font-semibold text-ink">Datos del perfil</p>
+          <dl className="mt-3 space-y-2">
+            {Object.entries(lead.extracted_data as Record<string, unknown>).map(([key, value]) => (
+              <div key={key} className="flex flex-wrap gap-x-3 gap-y-0.5">
+                <dt className="shrink-0 text-xs font-medium capitalize text-ink-3">
+                  {key.replace(/_/g, " ")}
+                </dt>
+                <dd className="text-xs text-ink-2">
+                  {typeof value === "object" && value !== null
+                    ? JSON.stringify(value)
+                    : String(value ?? "—")}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
+
+      {/* Reasoning — razonamiento del clasificador IA */}
+      {lead.reasoning && (
+        <div className="rounded-lg border border-signal/15 bg-signal-surface p-4">
+          <p className="text-sm font-semibold text-ink">Razonamiento del clasificador IA</p>
+          <p className="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-ink-2">
+            {lead.reasoning}
+          </p>
+        </div>
+      )}
 
       {/* Order data */}
       {lead.order_data && (
