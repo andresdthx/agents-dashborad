@@ -13,7 +13,7 @@ import { Pencil } from "lucide-react";
 
 type ClientRow = Pick<
   Client,
-  "id" | "name" | "business_type" | "active" | "channel_phone_number" | "product_mode" | "created_at"
+  "id" | "name" | "business_type" | "active" | "channel_phone_number" | "created_at"
 >;
 
 export function ClientsTable({ clients }: { clients: ClientRow[] }) {
@@ -24,7 +24,6 @@ export function ClientsTable({ clients }: { clients: ClientRow[] }) {
           <TableRow className="border-edge hover:bg-transparent">
             <TableHead className="font-medium text-ink-3">Nombre</TableHead>
             <TableHead className="font-medium text-ink-3">Teléfono canal</TableHead>
-            <TableHead className="font-medium text-ink-3">Modo</TableHead>
             <TableHead className="font-medium text-ink-3">Estado</TableHead>
             <TableHead className="font-medium text-ink-3">Creado</TableHead>
             <TableHead className="w-12" />
@@ -34,7 +33,7 @@ export function ClientsTable({ clients }: { clients: ClientRow[] }) {
           {clients.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={6}
+                colSpan={5}
                 className="py-12 text-center text-sm text-ink-3"
               >
                 No hay clientes aún
@@ -46,11 +45,6 @@ export function ClientsTable({ clients }: { clients: ClientRow[] }) {
                 <TableCell className="font-medium text-ink">{c.name}</TableCell>
                 <TableCell className="font-mono text-sm tabular-nums text-ink-2">
                   {c.channel_phone_number}
-                </TableCell>
-                <TableCell>
-                  <span className="inline-flex items-center rounded-md border border-edge px-2 py-0.5 text-xs font-medium capitalize text-ink-2">
-                    {c.product_mode}
-                  </span>
                 </TableCell>
                 <TableCell>
                   {c.active ? (

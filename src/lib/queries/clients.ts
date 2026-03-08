@@ -126,7 +126,7 @@ export async function getClients() {
 
   const { data, error } = await supabase
     .from("clients")
-    .select("id, name, business_type, active, channel_phone_number, product_mode, plan_id, created_at")
+    .select("id, name, business_type, active, channel_phone_number, plan_id, created_at")
     .order("created_at", { ascending: false });
 
   return { clients: data ?? [], error };

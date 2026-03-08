@@ -49,8 +49,7 @@ export default async function EditClientPage({
           business_type: client.business_type ?? "",
           channel_phone_number: client.channel_phone_number,
           plan_id: client.plan_id ?? "",
-          product_mode: client.product_mode,
-          catalog_url: client.catalog_url ?? "",
+          consult_catalog_url: client.consult_catalog_url ?? "",
           active: client.active,
           promptContent: salesPrompt,
         }}
