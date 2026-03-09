@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { cn, formatDate } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { HandoffBadge } from "./HandoffBadge";
 
 const statusLabel: Record<string, string> = {
   bot_active: "Agente activo",
@@ -59,6 +60,8 @@ interface Props {
     | "bot_paused"
     | "bot_paused_reason"
     | "status"
+    | "handoff_mode"
+    | "handoff_reason"
     | "created_at"
     | "order_confirmed_at"
   >[];
@@ -175,6 +178,22 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
           </SelectContent>
         </Select>
 
+        <Select
+          defaultValue={searchParams.get("handoffMode") ?? "all"}
+          onValueChange={(v) => updateParam("handoffMode", v)}
+        >
+          <SelectTrigger className="w-40 border-edge bg-surface-raised text-ink focus:ring-signal">
+            <SelectValue placeholder="Handoff" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Handoff: todos</SelectItem>
+            <SelectItem value="urgent">Urgente</SelectItem>
+            <SelectItem value="requested">Solicitado</SelectItem>
+            <SelectItem value="technical">Técnico</SelectItem>
+            <SelectItem value="observer">Observador</SelectItem>
+          </SelectContent>
+        </Select>
+
         {/* Filtro fecha desde */}
         <div className="flex items-center gap-1">
           <label className="text-[11px] text-ink-3" htmlFor="filter-date-from">
@@ -252,6 +271,7 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                 </button>
               </TableHead>
               <TableHead className="text-ink-3 font-medium">Estado</TableHead>
+              <TableHead className="text-ink-3 font-medium">Handoff</TableHead>
               <TableHead className="text-ink-3 font-medium">
                 <button
                   onClick={() => handleSort("created_at")}
@@ -268,7 +288,7 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
             {leads.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={6}
                   className="py-12 text-center text-sm text-ink-3"
                 >
                   No hay leads que coincidan con los filtros
@@ -319,22 +339,19 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-medium ${statusStyle[lead.status] ?? statusStyle.bot_active}`}
-                      >
-                        <span className={`h-1.5 w-1.5 rounded-full ${statusDot[lead.status] ?? statusDot.bot_active}`} />
-                        {statusLabel[lead.status] ?? lead.status}
-                      </span>
-                      {lead.bot_paused && lead.bot_paused_reason && (
-                        <span
-                          className="max-w-[180px] truncate text-[11px] text-bot-paused-text"
-                          title={lead.bot_paused_reason}
-                        >
-                          {lead.bot_paused_reason}
-                        </span>
-                      )}
-                    </div>
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-medium ${statusStyle[lead.status] ?? statusStyle.bot_active}`}
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${statusDot[lead.status] ?? statusDot.bot_active}`} />
+                      {statusLabel[lead.status] ?? lead.status}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <HandoffBadge
+                      handoffMode={lead.handoff_mode}
+                      handoffReason={lead.handoff_reason}
+                      botPausedReason={lead.bot_paused_reason}
+                    />
                   </TableCell>
                   <TableCell className="font-mono text-xs tabular-nums text-ink-3">
                     {formatDate(lead.created_at)}

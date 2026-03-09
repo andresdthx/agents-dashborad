@@ -76,6 +76,8 @@ export type Database = {
           bot_paused_at: string | null;
           resumed_at: string | null;
           status: "bot_active" | "human_active" | "resolved" | "lost";
+          handoff_mode: "urgent" | "requested" | "technical" | "observer" | null;
+          handoff_reason: string | null;
           extracted_data: Record<string, unknown> | null;
           order_data: Record<string, unknown> | null;
           order_confirmed_at: string | null;
@@ -93,6 +95,8 @@ export type Database = {
           bot_paused_at?: string | null;
           resumed_at?: string | null;
           status?: "bot_active" | "human_active" | "resolved" | "lost";
+          handoff_mode?: "urgent" | "requested" | "technical" | "observer" | null;
+          handoff_reason?: string | null;
           extracted_data?: Record<string, unknown> | null;
           order_data?: Record<string, unknown> | null;
         };
@@ -106,6 +110,8 @@ export type Database = {
           bot_paused_at?: string | null;
           resumed_at?: string | null;
           status?: "bot_active" | "human_active" | "resolved" | "lost";
+          handoff_mode?: "urgent" | "requested" | "technical" | "observer" | null;
+          handoff_reason?: string | null;
           extracted_data?: Record<string, unknown> | null;
           order_data?: Record<string, unknown> | null;
         };
@@ -219,6 +225,7 @@ export type Database = {
           bot_paused_at: string | null;
           resumed_at: string | null;
           status: "bot_active" | "human_active" | "resolved" | "lost";
+          handoff_mode: "urgent" | "requested" | "technical" | "observer" | null;
           error?: string;
         };
       };

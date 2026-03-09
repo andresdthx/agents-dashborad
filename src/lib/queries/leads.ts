@@ -85,6 +85,7 @@ export async function getLeads({
   classification,
   botPaused,
   status,
+  handoffMode,
   search,
   dateFrom,
   dateTo,
@@ -97,6 +98,7 @@ export async function getLeads({
   classification?: "hot" | "warm" | "cold";
   botPaused?: boolean;
   status?: "bot_active" | "human_active" | "resolved" | "lost";
+  handoffMode?: "urgent" | "requested" | "technical" | "observer";
   search?: string;
   dateFrom?: string;
   dateTo?: string;
@@ -113,7 +115,7 @@ export async function getLeads({
   let query = supabase
     .from("leads")
     .select(
-      "id, phone, classification, score, bot_paused, bot_paused_reason, bot_paused_at, status, order_confirmed_at, created_at, updated_at",
+      "id, phone, classification, score, bot_paused, bot_paused_reason, bot_paused_at, status, handoff_mode, handoff_reason, order_confirmed_at, created_at, updated_at",
       { count: "exact" }
     )
     .order(sortBy, { ascending, nullsFirst: false })
@@ -127,6 +129,7 @@ export async function getLeads({
   if (classification) query = query.eq("classification", classification);
   if (botPaused !== undefined) query = query.eq("bot_paused", botPaused);
   if (status) query = query.eq("status", status);
+  if (handoffMode) query = query.eq("handoff_mode", handoffMode);
   if (search) query = query.ilike("phone", `%${search}%`);
   if (dateFrom) query = query.gte("created_at", dateFrom);
   if (dateTo) {
