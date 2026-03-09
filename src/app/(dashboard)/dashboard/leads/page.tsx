@@ -6,6 +6,7 @@ interface SearchParams {
   classification?: string;
   paused?: string;
   status?: string;
+  handoffMode?: string;
   search?: string;
   dateFrom?: string;
   dateTo?: string;
@@ -29,6 +30,15 @@ export default async function LeadsPage({
   const botPaused =
     params.paused === "true" ? true : params.paused === "false" ? false : undefined;
 
+  const validHandoffModes = ["urgent", "requested", "technical", "observer"] as const;
+  type ValidHandoffMode = (typeof validHandoffModes)[number];
+  const rawHandoffMode = params.handoffMode as string | undefined;
+  const handoffMode: ValidHandoffMode | undefined = validHandoffModes.includes(
+    rawHandoffMode as ValidHandoffMode
+  )
+    ? (rawHandoffMode as ValidHandoffMode)
+    : undefined;
+
   const validSortFields = ["score", "created_at", "classification", "updated_at"] as const;
   type ValidSortField = (typeof validSortFields)[number];
   const rawSortBy = params.sortBy as string | undefined;
@@ -45,6 +55,7 @@ export default async function LeadsPage({
     classification,
     botPaused,
     status,
+    handoffMode,
     search: params.search,
     dateFrom: params.dateFrom,
     dateTo: params.dateTo,
