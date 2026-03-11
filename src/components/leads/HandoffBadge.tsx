@@ -31,14 +31,21 @@ const handoffConfig: Record<
   },
 };
 
+// Claves de código (bot_paused_reason) → texto legible para el agente.
+// Actualizadas según los grupos de handoff definidos en handoff-guide.md.
 const pausedReasonLabel: Record<string, string> = {
+  // URGENT
   order_confirmed: "Pedido confirmado",
   reservation_confirmed: "Reserva confirmada",
   llm_handoff_urgent: "Bot escaló urgente",
+  // REQUESTED
   llm_handoff: "Bot solicitó atención",
   needs_images: "Fotos solicitadas",
   vision_low_conf: "Imagen no reconocida",
   no_catalog_match: "Sin coincidencia en catálogo",
+  human_takeover: "Tomado por agente",
+  domicilio_exception: "Consulta de domicilio",
+  // TECHNICAL
   no_catalog: "Sin catálogo configurado",
   out_of_stock: "Sin stock",
   config_error: "Error de configuración",
@@ -55,8 +62,12 @@ export function HandoffBadge({ handoffMode, handoffReason, botPausedReason }: Pr
 
   const config = handoffConfig[handoffMode];
   const { Icon } = config;
-  const reasonText =
-    handoffReason ?? (botPausedReason ? pausedReasonLabel[botPausedReason] : null);
+  // handoffReason tiene prioridad (texto libre del LLM).
+  // Usamos || para descartar cadenas vacías que el backend pudiera enviar.
+  const reasonText: string | null =
+    handoffReason?.trim() ||
+    (botPausedReason ? (pausedReasonLabel[botPausedReason] ?? null) : null) ||
+    null;
 
   return (
     <div className="flex flex-col gap-0.5">

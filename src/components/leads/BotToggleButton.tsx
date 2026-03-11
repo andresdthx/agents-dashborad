@@ -5,15 +5,18 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Play, PauseCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { HandoffBadge } from "./HandoffBadge";
 
 interface Props {
   leadId: string;
   botPaused: boolean;
   botPausedReason: string | null;
+  handoffMode: "urgent" | "requested" | "technical" | "observer" | null;
+  handoffReason: string | null;
   status: "bot_active" | "human_active" | "resolved" | "lost";
 }
 
-export function BotToggleButton({ leadId, botPaused, botPausedReason, status }: Props) {
+export function BotToggleButton({ leadId, botPaused, botPausedReason, handoffMode, handoffReason, status }: Props) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -88,10 +91,12 @@ export function BotToggleButton({ leadId, botPaused, botPausedReason, status }: 
         </button>
       </div>
 
-      {botPaused && botPausedReason && (
-        <p className="text-xs text-ink-3">
-          Razón: <span className="text-ink-2">{botPausedReason}</span>
-        </p>
+      {botPaused && (
+        <HandoffBadge
+          handoffMode={handoffMode}
+          handoffReason={handoffReason}
+          botPausedReason={botPausedReason}
+        />
       )}
     </div>
   );

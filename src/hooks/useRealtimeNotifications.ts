@@ -45,8 +45,21 @@ function saveToStorage(notifications: Notification[]) {
  * - Double-fire prevention: hot_lead UPDATE returns early (skips bot_paused check)
  * - Auto-dismiss bot_paused notifications when bot is reactivated
  * - read/unread tracking; markAllRead() to zero the badge without clearing the list
+ *
+ * Callbacks:
+ * - onDataChange: se llama en cualquier cambio de lead (UPDATE o INSERT) para
+ *   permitir un router.refresh() del dashboard sin recargar la pagina.
+ * - onNewNotification: se llama solo cuando se genera una notificacion visible
+ *   (hot_lead o bot_paused) para disparar un sonido de alerta.
  */
-export function useRealtimeNotifications(clientId: string | null) {
+export function useRealtimeNotifications(
+  clientId: string | null,
+  options?: {
+    onDataChange?: () => void;
+    onNewNotification?: () => void;
+  }
+) {
+  const { onDataChange, onNewNotification } = options ?? {};
   const initialized = useRef(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -103,6 +116,8 @@ export function useRealtimeNotifications(clientId: string | null) {
                 ...prev,
               ].slice(0, 20)
             );
+            onNewNotification?.();
+            onDataChange?.();
             return;
           }
 
@@ -121,6 +136,9 @@ export function useRealtimeNotifications(clientId: string | null) {
                 ...prev,
               ].slice(0, 20)
             );
+            onNewNotification?.();
+            onDataChange?.();
+            return;
           }
 
           // Bot reactivated: auto-dismiss all bot_paused notifications for this lead
@@ -128,7 +146,23 @@ export function useRealtimeNotifications(clientId: string | null) {
             setNotifications((prev) =>
               prev.filter((n) => !(n.type === "bot_paused" && n.leadId === record.id))
             );
+            onDataChange?.();
           }
+        }
+      )
+      .on(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        "postgres_changes" as any,
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "leads",
+          ...(filter ? { filter } : {}),
+        },
+        () => {
+          // Un lead nuevo refresca el dashboard (contadores "Hoy" y "Total")
+          // pero no genera notificacion visible hasta que sea clasificado.
+          onDataChange?.();
         }
       )
       .subscribe();
@@ -136,7 +170,7 @@ export function useRealtimeNotifications(clientId: string | null) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [clientId]);
+  }, [clientId, onDataChange, onNewNotification]);
 
   const clearNotifications = () => setNotifications([]);
 
