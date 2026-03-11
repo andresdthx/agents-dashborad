@@ -7,6 +7,7 @@ import { BotToggleButton } from "@/components/leads/BotToggleButton";
 import { formatDateTime } from "@/lib/utils";
 import Link from "next/link";
 import { ChevronLeft, ClipboardList, CheckCircle2 } from "lucide-react";
+import { HandoffBadge } from "@/components/leads/HandoffBadge";
 
 export default async function LeadDetailPage({
   params,
@@ -35,14 +36,34 @@ export default async function LeadDetailPage({
 
       {/* Human active banner */}
       {lead.status === "human_active" && (
-        <div className="flex items-center gap-3 rounded-lg border border-bot-paused/25 bg-bot-paused-surface px-4 py-3">
-          <span className="relative flex h-2 w-2 shrink-0">
+        <div className="flex items-start gap-3 rounded-lg border border-bot-paused/25 bg-bot-paused-surface px-4 py-3">
+          <span className="relative mt-1 flex h-2 w-2 shrink-0">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bot-paused opacity-50" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-bot-paused" />
           </span>
-          <p className="text-sm font-medium text-bot-paused-text">
-            Atención humana activa — el bot está pausado en este lead
-          </p>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium text-bot-paused-text">
+              Atención humana activa — el bot está pausado en este lead
+            </p>
+            {lead.handoff_mode && (
+              <HandoffBadge
+                handoffMode={lead.handoff_mode}
+                handoffReason={lead.handoff_reason}
+                botPausedReason={lead.bot_paused_reason}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Urgent handoff with resolved status (order_confirmed) */}
+      {lead.status === "resolved" && lead.handoff_mode === "urgent" && (
+        <div className="flex items-start gap-3 rounded-lg border border-red-500/25 bg-red-500/10 px-4 py-3">
+          <HandoffBadge
+            handoffMode="urgent"
+            handoffReason={lead.handoff_reason}
+            botPausedReason={lead.bot_paused_reason}
+          />
         </div>
       )}
 
@@ -81,6 +102,8 @@ export default async function LeadDetailPage({
           leadId={lead.id}
           botPaused={lead.bot_paused}
           botPausedReason={lead.bot_paused_reason}
+          handoffMode={lead.handoff_mode}
+          handoffReason={lead.handoff_reason}
           status={lead.status}
         />
       </div>

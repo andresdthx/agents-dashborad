@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { getBrowserClient } from "@/lib/supabase/browser";
@@ -63,6 +63,14 @@ export function TopBar({ userEmail, clientId }: TopBarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const pageLabel = getPageLabel(pathname);
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleLeadChange = useCallback(() => {
+    if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+    refreshTimeoutRef.current = setTimeout(() => {
+      router.refresh();
+    }, 2000);
+  }, [router]);
 
   async function handleSignOut() {
     const supabase = getBrowserClient();
@@ -80,7 +88,7 @@ export function TopBar({ userEmail, clientId }: TopBarProps) {
 
       <div className="flex items-center gap-1.5">
         <ThemeToggle />
-        <NotificationBell clientId={clientId} />
+        <NotificationBell clientId={clientId} onDataChange={handleLeadChange} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
