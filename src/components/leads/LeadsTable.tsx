@@ -24,6 +24,7 @@ import {
 import { cn, formatDate } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { HandoffBadge } from "./HandoffBadge";
+import { BotToggleButton } from "./BotToggleButton";
 
 const statusLabel: Record<string, string> = {
   bot_active: "Agente activo",
@@ -282,13 +283,14 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                   <SortIcon field="created_at" />
                 </button>
               </TableHead>
+              <TableHead className="text-ink-3 font-medium">Bot</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {leads.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="py-12 text-center text-sm text-ink-3"
                 >
                   No hay leads que coincidan con los filtros
@@ -355,6 +357,16 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                   </TableCell>
                   <TableCell className="font-mono text-xs tabular-nums text-ink-3">
                     {formatDate(lead.created_at)}
+                  </TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <BotToggleButton
+                      leadId={lead.id}
+                      botPaused={lead.bot_paused}
+                      botPausedReason={lead.bot_paused_reason}
+                      handoffMode={lead.handoff_mode}
+                      handoffReason={lead.handoff_reason}
+                      status={lead.status}
+                    />
                   </TableCell>
                 </TableRow>
               ))
