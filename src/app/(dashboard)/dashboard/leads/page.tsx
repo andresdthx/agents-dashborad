@@ -39,14 +39,16 @@ export default async function LeadsPage({
     ? (rawHandoffMode as ValidHandoffMode)
     : undefined;
 
-  const validSortFields = ["score", "created_at", "classification", "updated_at"] as const;
+  const validSortFields = ["name", "score", "created_at", "classification", "updated_at"] as const;
   type ValidSortField = (typeof validSortFields)[number];
   const rawSortBy = params.sortBy as string | undefined;
   const sortBy: ValidSortField = validSortFields.includes(rawSortBy as ValidSortField)
     ? (rawSortBy as ValidSortField)
-    : "updated_at";
+    : "name";
 
-  const sortDir = params.sortDir === "asc" ? "asc" : "desc";
+  // Cuando no hay sortDir explícito en la URL, "name" ordena asc; el resto desc
+  const sortDir =
+    params.sortDir === "asc" ? "asc" : params.sortDir === "desc" ? "desc" : sortBy === "name" ? "asc" : "desc";
   const minScore = params.minScore ? Number(params.minScore) : undefined;
 
   const { leads, total } = await getLeads({

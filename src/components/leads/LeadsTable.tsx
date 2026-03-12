@@ -49,13 +49,14 @@ const statusDot: Record<string, string> = {
   lost: "bg-ink-4",
 };
 
-type SortField = "score" | "created_at" | "classification";
+type SortField = "name" | "score" | "created_at" | "classification";
 
 interface Props {
   leads: Pick<
     Lead,
     | "id"
     | "phone"
+    | "name"
     | "classification"
     | "score"
     | "bot_paused"
@@ -106,8 +107,8 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
     [updateParam]
   );
 
-  const currentSortBy = (searchParams.get("sortBy") as SortField | null) ?? null;
-  const currentSortDir = searchParams.get("sortDir") ?? "desc";
+  const currentSortBy = (searchParams.get("sortBy") as SortField | null) ?? "name";
+  const currentSortDir = searchParams.get("sortDir") ?? (currentSortBy === "name" ? "asc" : "desc");
 
   const handleSort = useCallback(
     (field: SortField) => {
@@ -117,7 +118,8 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
         params.set("sortDir", currentSortDir === "asc" ? "desc" : "asc");
       } else {
         params.set("sortBy", field);
-        params.set("sortDir", "desc");
+        // "name" ordena asc por defecto; el resto desc
+        params.set("sortDir", field === "name" ? "asc" : "desc");
       }
       params.set("page", "1");
       router.push(`?${params.toString()}`, { scroll: false });
@@ -250,6 +252,16 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
         <Table>
           <TableHeader>
             <TableRow className="border-edge hover:bg-transparent">
+              <TableHead className="text-ink-3 font-medium">
+                <button
+                  onClick={() => handleSort("name")}
+                  className="inline-flex items-center transition-colors hover:text-ink"
+                  aria-label="Ordenar por nombre"
+                >
+                  Nombre
+                  <SortIcon field="name" />
+                </button>
+              </TableHead>
               <TableHead className="text-ink-3 font-medium">Teléfono</TableHead>
               <TableHead className="text-ink-3 font-medium">
                 <button
@@ -290,7 +302,7 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
             {leads.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="py-12 text-center text-sm text-ink-3"
                 >
                   No hay leads que coincidan con los filtros
@@ -310,8 +322,11 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                       href={`/dashboard/leads/${lead.id}`}
                       className="font-medium text-ink hover:text-signal transition-colors"
                     >
-                      {lead.phone}
+                      {lead.name ?? <span className="text-ink-4">—</span>}
                     </Link>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs tabular-nums text-ink-3">
+                    {lead.phone}
                   </TableCell>
                   <TableCell>
                     <ClassificationBadge

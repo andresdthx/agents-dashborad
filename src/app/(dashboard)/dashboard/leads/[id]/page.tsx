@@ -187,18 +187,48 @@ export default async function LeadDetailPage({
         <div className="rounded-lg border border-edge bg-surface-raised p-4">
           <p className="text-sm font-semibold text-ink">Datos del perfil</p>
           <dl className="mt-3 space-y-2">
-            {Object.entries(lead.extracted_data as Record<string, unknown>).map(([key, value]) => (
-              <div key={key} className="flex flex-wrap gap-x-3 gap-y-0.5">
-                <dt className="shrink-0 text-xs font-medium capitalize text-ink-3">
-                  {key.replace(/_/g, " ")}
-                </dt>
-                <dd className="text-xs text-ink-2">
-                  {typeof value === "object" && value !== null
-                    ? JSON.stringify(value)
-                    : String(value ?? "—")}
-                </dd>
-              </div>
-            ))}
+            {Object.entries(lead.extracted_data as Record<string, unknown>).map(([key, value]) => {
+              const label = key.replace(/_/g, " ");
+              if (Array.isArray(value)) {
+                return (
+                  <div key={key}>
+                    <dt className="text-xs font-medium capitalize text-ink-3">{label}</dt>
+                    <dd className="mt-0.5 ml-2 space-y-0.5">
+                      {value.map((item, i) => (
+                        <p key={i} className="text-xs text-ink-2">
+                          {typeof item === "object" && item !== null
+                            ? Object.entries(item as Record<string, unknown>)
+                                .map(([k, v]) => `${k.replace(/_/g, " ")}: ${String(v ?? "—")}`)
+                                .join(" · ")
+                            : String(item ?? "—")}
+                        </p>
+                      ))}
+                    </dd>
+                  </div>
+                );
+              }
+              if (typeof value === "object" && value !== null) {
+                return (
+                  <div key={key}>
+                    <dt className="text-xs font-medium capitalize text-ink-3">{label}</dt>
+                    <dd className="mt-0.5 ml-2 space-y-0.5">
+                      {Object.entries(value as Record<string, unknown>).map(([k, v]) => (
+                        <div key={k} className="flex gap-x-2">
+                          <span className="shrink-0 text-xs capitalize text-ink-4">{k.replace(/_/g, " ")}:</span>
+                          <span className="text-xs text-ink-2">{String(v ?? "—")}</span>
+                        </div>
+                      ))}
+                    </dd>
+                  </div>
+                );
+              }
+              return (
+                <div key={key} className="flex flex-wrap gap-x-3 gap-y-0.5">
+                  <dt className="shrink-0 text-xs font-medium capitalize text-ink-3">{label}</dt>
+                  <dd className="text-xs text-ink-2">{String(value ?? "—")}</dd>
+                </div>
+              );
+            })}
           </dl>
         </div>
       )}

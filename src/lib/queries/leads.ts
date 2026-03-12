@@ -90,8 +90,8 @@ export async function getLeads({
   dateFrom,
   dateTo,
   minScore,
-  sortBy = "updated_at",
-  sortDir = "desc",
+  sortBy = "name",
+  sortDir = "asc",
 }: {
   page?: number;
   pageSize?: number;
@@ -103,7 +103,7 @@ export async function getLeads({
   dateFrom?: string;
   dateTo?: string;
   minScore?: number;
-  sortBy?: "score" | "created_at" | "classification" | "updated_at";
+  sortBy?: "name" | "score" | "created_at" | "classification" | "updated_at";
   sortDir?: "asc" | "desc";
 }) {
   const supabase = await createClient();
@@ -115,7 +115,7 @@ export async function getLeads({
   let query = supabase
     .from("leads")
     .select(
-      "id, phone, classification, score, bot_paused, bot_paused_reason, bot_paused_at, status, handoff_mode, handoff_reason, order_confirmed_at, created_at, updated_at",
+      "id, phone, name, classification, score, bot_paused, bot_paused_reason, bot_paused_at, status, handoff_mode, handoff_reason, order_confirmed_at, created_at, updated_at",
       { count: "exact" }
     )
     .order(sortBy, { ascending, nullsFirst: false })
@@ -124,6 +124,10 @@ export async function getLeads({
   // Para updated_at como sort primario, agregamos created_at como secundario
   if (sortBy === "updated_at") {
     query = query.order("created_at", { ascending: false });
+  }
+  // Para name como sort primario, desempatamos por phone (leads con name=null van al final)
+  if (sortBy === "name") {
+    query = query.order("phone", { ascending: true });
   }
 
   if (classification) query = query.eq("classification", classification);
