@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getOwnClientFaqs } from "@/lib/queries/faqs";
+import { getOwnClientFaqs } from "@/lib/queries/faqs.server";
 import { ClientFaqsManager } from "@/components/admin/ClientFaqsManager";
 import { MessageSquare } from "lucide-react";
 import { redirect } from "next/navigation";
