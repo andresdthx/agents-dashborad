@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Building2, Zap, MessageSquare, Bot } from "lucide-react";
+import { LayoutDashboard, Users, Building2, Zap, MessageSquare, Bot, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -19,7 +19,8 @@ const adminLinks = [
 ];
 
 const settingsLinks = [
-  { href: "/dashboard/settings/agent", label: "Agente", icon: Bot },
+  { href: "/dashboard/settings/agent", label: "Entrenar Agente", icon: Bot },
+  { href: "/dashboard/settings/handoff", label: "Transferencias", icon: ArrowLeftRight },
   { href: "/dashboard/settings/faqs", label: "Preguntas frecuentes", icon: MessageSquare },
 ];
 

@@ -28,6 +28,10 @@ export function ClientTabNav({ clientId, activeFaqsCount }: Props) {
       label: "Agente",
     },
     {
+      href: `/admin/clients/${clientId}/handoff`,
+      label: "Transferencias",
+    },
+    {
       href: `/admin/clients/${clientId}/faqs`,
       label: "Preguntas frecuentes",
       badge: activeFaqsCount,
