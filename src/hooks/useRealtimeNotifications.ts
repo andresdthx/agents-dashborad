@@ -146,8 +146,10 @@ export function useRealtimeNotifications(
             setNotifications((prev) =>
               prev.filter((n) => !(n.type === "bot_paused" && n.leadId === record.id))
             );
-            onDataChange?.();
           }
+
+          // Refresh dashboard for any UPDATE (warm/cold classification, status changes, etc.)
+          onDataChange?.();
         }
       )
       .on(

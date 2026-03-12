@@ -68,6 +68,7 @@ export type Database = {
         Row: {
           id: string;
           phone: string;
+          name: string | null;
           classification: "hot" | "warm" | "cold" | null;
           score: number | null;
           client_id: string | null;
@@ -87,6 +88,7 @@ export type Database = {
         };
         Insert: {
           phone: string;
+          name?: string | null;
           classification?: "hot" | "warm" | "cold" | null;
           score?: number | null;
           client_id?: string | null;
@@ -102,6 +104,7 @@ export type Database = {
         };
         Update: {
           phone?: string;
+          name?: string | null;
           classification?: "hot" | "warm" | "cold" | null;
           score?: number | null;
           client_id?: string | null;
