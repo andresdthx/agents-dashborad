@@ -24,6 +24,10 @@ export function ClientTabNav({ clientId, activeFaqsCount }: Props) {
       label: "Configuración general",
     },
     {
+      href: `/admin/clients/${clientId}/agent`,
+      label: "Agente",
+    },
+    {
       href: `/admin/clients/${clientId}/faqs`,
       label: "Preguntas frecuentes",
       badge: activeFaqsCount,
