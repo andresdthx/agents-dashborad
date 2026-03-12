@@ -207,6 +207,32 @@ export type Database = {
         };
         Relationships: [];
       };
+      client_faqs: {
+        Row: {
+          id: string;
+          client_id: string;
+          question: string;
+          answer: string;
+          is_active: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          client_id: string;
+          question: string;
+          answer: string;
+          is_active?: boolean;
+          sort_order?: number;
+        };
+        Update: {
+          question?: string;
+          answer?: string;
+          is_active?: boolean;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Enums: Record<string, never>;
@@ -242,3 +268,4 @@ export type Message = Tables<"messages">;
 export type ClientUser = Tables<"client_users">;
 export type AgentPrompt = Tables<"agent_prompts">;
 export type Plan = Tables<"plans">;
+export type ClientFaq = Tables<"client_faqs">;

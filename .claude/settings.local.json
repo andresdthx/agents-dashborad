@@ -4,7 +4,15 @@
       "Bash(node:*)",
       "Bash(head:*)",
       "Bash(cd /c/Users/andres.canchila_prag/Documents/personal_devs/web && npx tsc --noEmit 2>&1)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(ls \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\\\\admin\\\\clients\")",
+      "Bash(ls \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\")",
+      "Bash(ls \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\" && ls \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\\\\admin\")",
+      "Bash(ls \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\\\\leads\")",
+      "Bash(cat \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\\\\page.tsx\" | head -50)",
+      "Bash(ls \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\\\\admin\\\\clients\\\\[id]\")",
+      "Bash(ls \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\")",
+      "Bash(cd \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\" && npx tsc --noEmit 2>&1 | head -60)"
     ]
   }
 }
