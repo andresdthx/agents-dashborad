@@ -12,7 +12,8 @@
       "Bash(cat \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\\\\page.tsx\" | head -50)",
       "Bash(ls \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\\\\admin\\\\clients\\\\[id]\")",
       "Bash(ls \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\")",
-      "Bash(cd \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\" && npx tsc --noEmit 2>&1 | head -60)"
+      "Bash(cd \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\" && npx tsc --noEmit 2>&1 | head -60)",
+      "Bash(cd \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\" && npx next build 2>&1 | head -60)"
     ]
   }
 }

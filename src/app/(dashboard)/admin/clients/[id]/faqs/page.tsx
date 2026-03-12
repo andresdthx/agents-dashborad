@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getClientById } from "@/lib/queries/clients";
-import { getFaqsByClientId } from "@/lib/queries/faqs";
+import { getFaqsByClientId } from "@/lib/queries/faqs.server";
 import { ClientFaqsManager } from "@/components/admin/ClientFaqsManager";
 import { ClientTabNav } from "@/components/admin/ClientTabNav";
 import Link from "next/link";
