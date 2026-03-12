@@ -79,7 +79,7 @@ export function HandoffBadge({ handoffMode, handoffReason, botPausedReason }: Pr
       </span>
       {reasonText && (
         <span
-          className="max-w-[180px] truncate text-[11px] text-ink-3"
+          className="line-clamp-2 break-words text-[11px] leading-snug text-ink-3"
           title={reasonText}
         >
           {reasonText}

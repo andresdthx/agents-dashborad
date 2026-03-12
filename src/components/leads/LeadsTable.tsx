@@ -283,7 +283,7 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                   <SortIcon field="created_at" />
                 </button>
               </TableHead>
-              <TableHead className="text-ink-3 font-medium">Bot</TableHead>
+              <TableHead className="text-ink-3 font-medium">Acción</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -362,10 +362,6 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                     <BotToggleButton
                       leadId={lead.id}
                       botPaused={lead.bot_paused}
-                      botPausedReason={lead.bot_paused_reason}
-                      handoffMode={lead.handoff_mode}
-                      handoffReason={lead.handoff_reason}
-                      status={lead.status}
                     />
                   </TableCell>
                 </TableRow>
