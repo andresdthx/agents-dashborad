@@ -57,6 +57,26 @@
 - `src/app/(dashboard)/dashboard/loading.tsx` — tokens corregidos, 4 cols en status
 - `src/app/(dashboard)/dashboard/leads/loading.tsx` — tokens corregidos
 
+## Archivos creados/modificados en sesión FAQs (Mar 2026)
+- `src/types/database.ts` — agregado `client_faqs` Row/Insert/Update + export `ClientFaq`
+- `src/lib/queries/faqs.ts` — NUEVO: getFaqsByClientId, getOwnClientFaqs, createFaq, updateFaq, deleteFaq, toggleFaqActive
+- `src/components/admin/ClientFaqsManager.tsx` — NUEVO: gestión CRUD inline con actualizaciones optimistas
+- `src/components/admin/ClientTabNav.tsx` — NUEVO: tabs de navegación por links para páginas admin de cliente
+- `src/app/(dashboard)/admin/clients/[id]/page.tsx` — modificado: agrega ClientTabNav + carga activeFaqsCount
+- `src/app/(dashboard)/admin/clients/[id]/faqs/page.tsx` — NUEVO: página admin de FAQs
+- `src/app/(dashboard)/dashboard/settings/faqs/page.tsx` — NUEVO: página client_agent de FAQs
+- `src/components/layout/Sidebar.tsx` — modificado: sección "Configuración" con MessageSquare para client_agent
+
+### FAQs del cliente (Mar 2026)
+- `getFaqsByClientId(clientId)` usa `createServiceClient()` (bypasa RLS) — para super_admin
+- `getOwnClientFaqs()` usa `createClient()` (aplica RLS) — para client_agent
+- Las mutaciones CRUD en `ClientFaqsManager` reciben `getBrowserClient()` internamente
+- El tipo en `faqs.ts` usa `any` tipado con eslint-disable solo en parámetro `supabase` de funciones de mutación — patrón aceptado porque el cliente puede venir del browser o server
+- `ClientTabNav` usa `pathname === href` (exact) para la ruta raíz del cliente y `pathname.startsWith(href)` para sub-rutas
+- El toggle is_active se implementó como botón pill (no Switch de shadcn — no existe en este proyecto)
+- Los componentes UI disponibles: `badge`, `button`, `dialog`, `dropdown-menu`, `input`, `label`, `select`, `separator`, `sheet`, `sonner`, `table`, `textarea` — NO hay Switch ni Tabs de shadcn
+- `sort_order` para nueva FAQ: `Math.max(...faqs.map(f => f.sort_order)) + 1` — evita dependencia de COUNT de la DB
+
 ## KPIs/métricas expuestas en UI
 - `today` + delta vs `yesterday` — en StatsCards strip operacional
 - `hotConfirmed` / `hotPending` — en StatsCards card hot y dashboard banner
