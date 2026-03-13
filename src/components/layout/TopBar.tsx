@@ -53,7 +53,7 @@ function ThemeToggle() {
       className="rounded-md p-1.5 text-ink-3 transition-colors hover:bg-surface-raised hover:text-ink-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-signal"
       aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
     >
-      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
     </button>
   );
 }
@@ -95,24 +95,25 @@ export function TopBar({ userEmail, clientId }: TopBarProps) {
   return (
     <header className="flex h-14 items-center justify-between border-b border-edge bg-canvas px-5">
       <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-ink-2">{pageLabel}</span>
+        <span className="text-lg font-medium text-ink-2">{pageLabel}</span>
         {dateStr && (
           <>
             <span className="hidden text-ink-4 sm:block">·</span>
-            <span className="hidden text-xs text-ink-4 sm:block">{dateStr}</span>
+            <span className="hidden text-sm text-ink-4 sm:block">{dateStr}</span>
           </>
         )}
       </div>
 
       <div className="flex items-center gap-1.5">
-        <ThemeToggle />
         <NotificationBell clientId={clientId} onDataChange={handleLeadChange} />
+
+        <ThemeToggle />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-signal">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-surface-raised text-[11px] font-semibold text-ink-2">
+              <Avatar className="h-9 w-9">
+                <AvatarFallback className="bg-surface-raised text-[12px] font-semibold text-ink-2">
                   {initials}
                 </AvatarFallback>
               </Avatar>

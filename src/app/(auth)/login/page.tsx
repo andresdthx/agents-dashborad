@@ -6,7 +6,7 @@ import { getBrowserClient } from "@/lib/supabase/browser";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Zap } from "lucide-react";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,10 +37,15 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-signal">
-            <Zap className="h-6 w-6 text-signal-fg" />
+              <Image
+                src="/white-logo.png"
+                alt="Avatha IA logo"
+                width={24}
+                height={24}
+              />
           </div>
           <div className="text-center">
-            <h1 className="text-xl font-semibold tracking-tight text-ink">Ava-tha</h1>
+            <h1 className="text-xl font-semibold tracking-tight text-ink">Avatha IA</h1>
             <p className="mt-0.5 text-sm text-ink-3">Ingresa a tu cuenta</p>
           </div>
         </div>
