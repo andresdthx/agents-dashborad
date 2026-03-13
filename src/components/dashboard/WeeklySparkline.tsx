@@ -34,7 +34,7 @@ export function WeeklySparkline({ data }: WeeklySparklineProps) {
   return (
     <div className="rounded-xl border border-edge bg-surface-raised p-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="text-xs font-semibold text-ink-2">Últimos 7 días</h2>
+        <h2 className="text-xs font-semibold text-ink-2">Clientes últimos 7 días</h2>
         <div className="flex items-center gap-3">
           {n > 0 && total > 0 && (
             <span className="text-[10px] text-ink-4">
