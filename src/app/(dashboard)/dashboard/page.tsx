@@ -15,6 +15,8 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  console.log('user', user)
+
   const rawName =
     user?.user_metadata?.full_name ??
     user?.email?.split("@")[0]?.split(".")[0] ??
