@@ -78,7 +78,7 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
         <div className="flex h-7 w-7 items-center justify-center rounded-md bg-signal shadow-sm">
           <Zap className="h-4 w-4 text-signal-fg" />
         </div>
-        <span className="text-sm font-semibold tracking-tight text-ink">AgentsLeads</span>
+        <span className="text-sm font-semibold tracking-tight text-ink">Ava-tha</span>
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-2 pt-3">

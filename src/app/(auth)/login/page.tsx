@@ -40,7 +40,7 @@ export default function LoginPage() {
             <Zap className="h-6 w-6 text-signal-fg" />
           </div>
           <div className="text-center">
-            <h1 className="text-xl font-semibold tracking-tight text-ink">AgentsLeads</h1>
+            <h1 className="text-xl font-semibold tracking-tight text-ink">Ava-tha</h1>
             <p className="mt-0.5 text-sm text-ink-3">Ingresa a tu cuenta</p>
           </div>
         </div>
