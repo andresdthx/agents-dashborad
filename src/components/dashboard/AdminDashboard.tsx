@@ -91,7 +91,7 @@ export function AdminDashboard({
   return (
     <div className="space-y-6">
       {/* Welcome banner */}
-      <div className="rounded-2xl border border-indigo-100 bg-linear-to-br from-indigo-50 via-violet-50/40 to-sky-50/30 p-6 dark:border-indigo-900/30 dark:from-indigo-950/40 dark:via-violet-950/20 dark:to-sky-950/10">
+      <div className="rounded-2xl border border-signal/15 bg-linear-to-br from-signal/8 to-surface-raised p-6">
         <div className="flex items-center gap-2 mb-1">
           <span className="rounded-md bg-signal/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-signal">
             Super Admin
@@ -145,7 +145,7 @@ export function AdminDashboard({
             colorClass="text-bot-active-text"
           />
           <StatTile
-            label="Clientes totales"
+            label="Total leads"
             value={totalLeads}
             sub="en todo el sistema"
           />

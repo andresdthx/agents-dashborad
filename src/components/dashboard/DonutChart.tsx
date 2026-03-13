@@ -76,9 +76,14 @@ export function DonutChart({ hot, warm, cold }: DonutChartProps) {
 
   return (
     <div className="flex flex-col rounded-xl border border-edge bg-surface-raised p-4 shadow-sm">
-      <h2 className="text-[10px] font-semibold uppercase tracking-widest text-ink-3">
-        Distribución
-      </h2>
+      <div className="flex items-center gap-1.5">
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-ink-4">
+          <circle cx="8" cy="8" r="6" />
+          <path d="M8 8L8 2" />
+          <path d="M8 8L13 11" />
+        </svg>
+        <h2 className="text-xs font-semibold text-ink-2">Distribución</h2>
+      </div>
 
       <div className="mt-3 flex flex-1 items-center gap-4">
         {/* SVG donut ring */}

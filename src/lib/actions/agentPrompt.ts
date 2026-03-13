@@ -2,45 +2,31 @@
 
 import { createServiceClient } from "@/lib/supabase/service";
 
-// Bloques del sistema que el cliente no debe ver ni alterar.
-const SYSTEM_BLOCK_RES = [
-  /<DatosInyectados>[\s\S]*?<\/DatosInyectados>/gi,
-  /<BloqueHandoff>[\s\S]*?<\/BloqueHandoff>/gi,
-];
+// Bloque que el cliente no debe ver ni alterar — se preserva al guardar.
+const DATOS_INYECTADOS_RE = /<DatosInyectados>[\s\S]*?<\/DatosInyectados>/gi;
+// <BloqueHandoff> ya no se persiste en BD — la Edge Function lo inyecta en tiempo real.
+const BLOQUE_HANDOFF_RE = /<BloqueHandoff>[\s\S]*?<\/BloqueHandoff>/gi;
 
 function stripSystemBlocks(content: string): string {
-  let result = content;
-  for (const re of SYSTEM_BLOCK_RES) {
-    result = result.replace(re, "");
-  }
-  return result.replace(/\n{3,}/g, "\n\n").trim();
+  return content
+    .replace(DATOS_INYECTADOS_RE, "")
+    .replace(BLOQUE_HANDOFF_RE, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
-/**
- * Extrae todos los bloques del sistema de un prompt y los retorna en orden.
- * El orden de aparición original se preserva para reconstruir el prompt correctamente.
- */
-function extractSystemBlocks(content: string): Array<{ block: string; index: number }> {
-  const blocks: Array<{ block: string; index: number }> = [];
-  for (const re of SYSTEM_BLOCK_RES) {
-    const reClone = new RegExp(re.source, re.flags.replace("g", "") + "i");
-    const match = content.match(reClone);
-    if (match) {
-      blocks.push({ block: match[0], index: content.indexOf(match[0]) });
-    }
-  }
-  // Ordenar por posición original para re-insertar al final en el mismo orden
-  return blocks.sort((a, b) => a.index - b.index);
+function extractDatosInyectados(content: string): string | null {
+  const re = new RegExp(DATOS_INYECTADOS_RE.source, "i");
+  return content.match(re)?.[0] ?? null;
 }
 
 /**
  * Guarda el prompt del agente de ventas de un cliente.
  *
  * Seguridad:
- * - Cualquier bloque del sistema (<DatosInyectados>, <BloqueHandoff>) que el cliente
- *   haya enviado es ignorado.
- * - Los bloques originales (si existían en BD) se re-insertan al final en su orden original.
- * - Esto garantiza que los bloques nunca desaparezcan y el cliente nunca pueda alterarlos.
+ * - <DatosInyectados> y <BloqueHandoff> que el cliente envíe son ignorados.
+ * - <DatosInyectados> original (si existía en BD) se re-inserta al final.
+ * - <BloqueHandoff> ya no se guarda en BD — la Edge Function lo inyecta en tiempo real.
  */
 export async function saveAgentPrompt(input: {
   clientId: string;
@@ -53,8 +39,8 @@ export async function saveAgentPrompt(input: {
   // 1. Strip cualquier bloque del sistema que venga del cliente
   const sanitizedUserContent = stripSystemBlocks(userContent);
 
-  // 2. Obtener los bloques originales desde BD (solo si ya existe el prompt)
-  let originalBlocks: Array<{ block: string; index: number }> = [];
+  // 2. Obtener <DatosInyectados> original desde BD (si existe) para re-insertarlo
+  let datosInyectados: string | null = null;
   if (promptId) {
     const { data } = await supabase
       .from("agent_prompts")
@@ -63,14 +49,13 @@ export async function saveAgentPrompt(input: {
       .single();
 
     if (data?.content) {
-      originalBlocks = extractSystemBlocks(data.content);
+      datosInyectados = extractDatosInyectados(data.content);
     }
   }
 
-  // 3. Reconstruir: contenido del usuario + bloques originales al final (en orden)
-  const blocksText = originalBlocks.map((b) => b.block).join("\n\n");
-  const finalContent = blocksText
-    ? `${sanitizedUserContent}\n\n${blocksText}`
+  // 3. Reconstruir: contenido del usuario + <DatosInyectados> al final (si existía)
+  const finalContent = datosInyectados
+    ? `${sanitizedUserContent}\n\n${datosInyectados}`
     : sanitizedUserContent;
 
   // 4. Guardar
