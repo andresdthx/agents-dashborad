@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Users, CalendarDays, PauseCircle } from "lucide-react";
 
 interface Stats {
   total: number;
@@ -203,6 +204,7 @@ export function StatsCards({ stats }: { stats: Stats }) {
           href="/dashboard/leads"
           className="flex flex-1 items-center gap-3 px-5 py-4 transition-colors hover:bg-surface-overlay"
         >
+          <Users className="h-4 w-4 shrink-0 text-ink-4" />
           <div>
             <p className="text-[11px] text-ink-3">Total leads</p>
             <p className="font-mono text-2xl font-bold tabular-nums text-ink">{stats.total}</p>
@@ -210,6 +212,7 @@ export function StatsCards({ stats }: { stats: Stats }) {
         </Link>
 
         <div className="flex flex-1 items-center gap-3 px-5 py-4">
+          <CalendarDays className="h-4 w-4 shrink-0 text-ink-4" />
           <div>
             <p className="text-[11px] text-ink-3">Hoy</p>
             <p className="font-mono text-2xl font-bold tabular-nums text-ink">{stats.today}</p>
@@ -225,6 +228,9 @@ export function StatsCards({ stats }: { stats: Stats }) {
               : "hover:bg-surface-overlay"
           }`}
         >
+          <PauseCircle
+            className={`h-4 w-4 shrink-0 ${stats.paused > 0 ? "text-bot-paused-text" : "text-ink-4"}`}
+          />
           <div>
             <p className="text-[11px] text-ink-3">Agente pausado</p>
             <p
