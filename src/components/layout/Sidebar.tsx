@@ -6,13 +6,13 @@ import {
   LayoutDashboard,
   Users,
   Building2,
-  Zap,
   MessageSquare,
   Bot,
   ArrowLeftRight,
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface SidebarProps {
   role: "super_admin" | "client_agent";
@@ -76,9 +76,14 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
       {/* Logomark */}
       <div className="flex h-14 items-center gap-2.5 border-b border-edge px-4">
         <div className="flex h-7 w-7 items-center justify-center rounded-md bg-signal shadow-sm">
-          <Zap className="h-4 w-4 text-signal-fg" />
+          <Image
+            src="/white-logo.png"
+            alt="Avatha IA logo"
+            width={20}
+            height={20}
+          />
         </div>
-        <span className="text-sm font-semibold tracking-tight text-ink">Ava-tha</span>
+        <span className="text-sm font-semibold tracking-tight text-ink">Avatha IA</span>
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-2 pt-3">

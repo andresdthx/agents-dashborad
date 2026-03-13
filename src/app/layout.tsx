@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dashboard - Ava-tha",
+  title: "Dashboard - Avatha IA",
   description: "Dashboard de calificación de leads por WhatsApp",
 };
 

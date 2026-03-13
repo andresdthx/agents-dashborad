@@ -34,7 +34,7 @@ export function NotificationBell({ clientId, onDataChange }: NotificationBellPro
     >
       <DropdownMenuTrigger asChild>
         <button className="relative rounded-md p-1.5 text-ink-3 transition-colors hover:bg-surface-raised hover:text-ink-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-signal">
-          <Bell className="h-4 w-4" />
+          <Bell className="h-5 w-5" />
           {unread > 0 && (
             <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-lead-hot text-[10px] font-bold text-white">
               {unread > 9 ? "9+" : unread}
