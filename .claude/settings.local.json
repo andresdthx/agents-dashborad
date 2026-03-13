@@ -13,7 +13,10 @@
       "Bash(ls \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\\\\admin\\\\clients\\\\[id]\")",
       "Bash(ls \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\src\\\\app\\\\\\(dashboard\\)\\\\dashboard\")",
       "Bash(cd \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\" && npx tsc --noEmit 2>&1 | head -60)",
-      "Bash(cd \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\" && npx next build 2>&1 | head -60)"
+      "Bash(cd \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\" && npx next build 2>&1 | head -60)",
+      "Bash(python3 \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\.claude\\\\skills\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"SaaS leads CRM dashboard professional dark mode\" --design-system -p \"AgentsLeads\" -f markdown 2>/dev/null || python \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\\\\.claude\\\\skills\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"SaaS leads CRM dashboard professional dark mode\" --design-system -p \"AgentsLeads\" -f markdown)",
+      "Bash(py --version 2>/dev/null || py3 --version 2>/dev/null || where python 2>/dev/null)",
+      "Bash(cd \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\" && python \".claude/skills/ui-ux-pro-max/scripts/search.py\" \"SaaS leads CRM dashboard analytics professional minimal\" --design-system -p \"AgentsLeads\" -f markdown 2>&1 | head -120)"
     ]
   }
 }

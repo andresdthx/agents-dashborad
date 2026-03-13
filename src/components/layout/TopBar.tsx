@@ -41,7 +41,6 @@ function ThemeToggle() {
 
   useEffect(() => setMounted(true), []);
 
-  // Placeholder del mismo tamaño para evitar layout shift durante hidratación
   if (!mounted) {
     return <span className="h-7 w-7" />;
   }
@@ -64,6 +63,17 @@ export function TopBar({ userEmail, clientId }: TopBarProps) {
   const router = useRouter();
   const pageLabel = getPageLabel(pathname);
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [dateStr, setDateStr] = useState<string>("");
+
+  useEffect(() => {
+    const d = new Date();
+    const raw = d.toLocaleDateString("es-ES", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+    setDateStr(raw.charAt(0).toUpperCase() + raw.slice(1));
+  }, []);
 
   const handleLeadChange = useCallback(() => {
     if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
@@ -84,7 +94,15 @@ export function TopBar({ userEmail, clientId }: TopBarProps) {
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-edge bg-canvas px-5">
-      <span className="text-sm font-medium text-ink-2">{pageLabel}</span>
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-medium text-ink-2">{pageLabel}</span>
+        {dateStr && (
+          <>
+            <span className="hidden text-ink-4 sm:block">·</span>
+            <span className="hidden text-xs text-ink-4 sm:block">{dateStr}</span>
+          </>
+        )}
+      </div>
 
       <div className="flex items-center gap-1.5">
         <ThemeToggle />
@@ -93,8 +111,8 @@ export function TopBar({ userEmail, clientId }: TopBarProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-signal">
-              <Avatar className="h-7 w-7">
-                <AvatarFallback className="bg-surface-raised text-[11px] text-ink-2">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-surface-raised text-[11px] font-semibold text-ink-2">
                   {initials}
                 </AvatarFallback>
               </Avatar>

@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { AlertTriangle, Check, Plus, Trash2, Users, X } from "lucide-react";
 import { getBrowserClient } from "@/lib/supabase/browser";
 import { createHandoff, updateHandoff, deleteHandoff, type ClientHandoff } from "@/lib/queries/handoffs";
-import { regenerateHandoffBlock } from "@/lib/actions/handoffRules";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,7 +71,6 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
       setEditingId(h.id);
       toast.error("Error al guardar");
     } else {
-      await regenerateHandoffBlock(clientId);
       toast.success("Regla actualizada");
     }
     setSavingId(null);
@@ -92,7 +90,6 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
       setHandoffs(previous);
       toast.error("Error al eliminar");
     } else {
-      await regenerateHandoffBlock(clientId);
       toast.success("Regla eliminada");
     }
     setDeletingId(null);
@@ -122,7 +119,6 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
       setHandoffs((prev) => [...prev, created]);
       setNewHandoff({ trigger: "", urgent: false, response: "" });
       setShowNewForm(false);
-      await regenerateHandoffBlock(clientId);
       toast.success("Regla creada");
     }
     setSavingNew(false);

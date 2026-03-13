@@ -7,7 +7,7 @@ import { WeeklySparkline } from "@/components/dashboard/WeeklySparkline";
 import { StatusBars } from "@/components/dashboard/StatusBars";
 import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
 import Link from "next/link";
-import { ArrowUpRight, TrendingUp, ClipboardList } from "lucide-react";
+import { ArrowUpRight, TrendingUp, ClipboardList, BarChart3, MessageSquare } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -53,10 +53,10 @@ export default async function DashboardPage() {
   const [stats, chartData] = await Promise.all([getLeadStats(), getLeadChartData()]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Welcome banner + bot status card */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="md:col-span-2 rounded-2xl border border-indigo-100 bg-linear-to-br from-indigo-50 via-violet-50/40 to-sky-50/30 p-6 dark:border-indigo-900/30 dark:from-indigo-950/40 dark:via-violet-950/20 dark:to-sky-950/10">
+        <div className="md:col-span-2 rounded-2xl border border-signal/15 bg-linear-to-br from-signal/8 to-surface-raised p-6">
           <h1 className="text-xl font-semibold text-ink">¡Gusto verte, {displayName}!</h1>
           <p className="mt-1.5 max-w-sm text-sm text-ink-3">
             Monitorea la calificación automática de tus leads y gestiona las conversaciones activas
@@ -98,7 +98,6 @@ export default async function DashboardPage() {
               {stats.hot}
             </p>
             <p className="mt-0.5 text-xs text-ink-3">leads urgentes (hot)</p>
-            {/* Desglose confirmados vs info pendiente */}
             {stats.hot > 0 && (
               <div className="mt-3 flex items-center gap-3 border-t border-edge pt-3">
                 <div>
@@ -175,13 +174,28 @@ export default async function DashboardPage() {
 
       <StatsCards stats={stats} />
 
-      {/* Charts */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <DonutChart hot={stats.hot} warm={stats.warm} cold={stats.cold} />
-        <WeeklySparkline data={chartData.weeklyTrend} />
+      {/* Charts section */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="h-3.5 w-3.5 text-ink-4" />
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-4">Análisis</h2>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <DonutChart hot={stats.hot} warm={stats.warm} cold={stats.cold} />
+          <WeeklySparkline data={chartData.weeklyTrend} />
+        </div>
       </div>
 
-      <StatusBars statusCounts={chartData.statusCounts} />
+      {/* Conversations section */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-3.5 w-3.5 text-ink-4" />
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-4">
+            Conversaciones
+          </h2>
+        </div>
+        <StatusBars statusCounts={chartData.statusCounts} />
+      </div>
     </div>
   );
 }

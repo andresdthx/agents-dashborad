@@ -2,11 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Building2, Zap, MessageSquare, Bot, ArrowLeftRight } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  Building2,
+  Zap,
+  MessageSquare,
+  Bot,
+  ArrowLeftRight,
+  Shield,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   role: "super_admin" | "client_agent";
+  userEmail?: string;
 }
 
 const clientLinks = [
@@ -14,9 +24,7 @@ const clientLinks = [
   { href: "/dashboard/leads", label: "Clientes", icon: Users },
 ];
 
-const adminLinks = [
-  { href: "/admin/clients", label: "Clientes", icon: Building2 },
-];
+const adminLinks = [{ href: "/admin/clients", label: "Clientes", icon: Building2 }];
 
 const settingsLinks = [
   { href: "/dashboard/settings/agent", label: "Entrenar Agente", icon: Bot },
@@ -24,7 +32,34 @@ const settingsLinks = [
   { href: "/dashboard/settings/faqs", label: "Preguntas frecuentes", icon: MessageSquare },
 ];
 
-export function Sidebar({ role }: SidebarProps) {
+function NavLink({
+  href,
+  label,
+  icon: Icon,
+  active,
+}: {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  active: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+        active
+          ? "bg-signal/10 font-medium text-signal"
+          : "text-ink-3 hover:bg-surface-raised hover:text-ink-2"
+      )}
+    >
+      <Icon className={cn("h-4 w-4 shrink-0", active ? "text-signal" : "")} />
+      {label}
+    </Link>
+  );
+}
+
+export function Sidebar({ role, userEmail }: SidebarProps) {
   const pathname = usePathname();
 
   function isActive(href: string, exact?: boolean) {
@@ -32,34 +67,23 @@ export function Sidebar({ role }: SidebarProps) {
     return pathname.startsWith(href);
   }
 
+  const initials = userEmail ? userEmail.slice(0, 2).toUpperCase() : "??";
+  const shortEmail =
+    userEmail && userEmail.length > 24 ? userEmail.slice(0, 22) + "…" : userEmail;
+
   return (
-    <aside className="flex h-full w-56 flex-col border-r border-edge bg-canvas">
+    <aside className="flex h-full w-60 flex-col border-r border-edge bg-canvas">
       {/* Logomark */}
       <div className="flex h-14 items-center gap-2.5 border-b border-edge px-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-signal">
+        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-signal shadow-sm">
           <Zap className="h-4 w-4 text-signal-fg" />
         </div>
         <span className="text-sm font-semibold tracking-tight text-ink">AgentsLeads</span>
       </div>
 
-      <nav className="flex-1 space-y-0.5 p-2 pt-3">
-        {clientLinks.map(({ href, label, icon: Icon, exact }) => (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              "relative flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
-              isActive(href, exact)
-                ? "bg-surface-raised text-ink"
-                : "text-ink-3 hover:bg-surface hover:text-ink-2"
-            )}
-          >
-            {isActive(href, exact) && (
-              <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r-full bg-signal" />
-            )}
-            <Icon className="h-4 w-4 shrink-0" />
-            {label}
-          </Link>
+      <nav className="flex-1 space-y-0.5 overflow-y-auto p-2 pt-3">
+        {clientLinks.map(({ href, label, icon, exact }) => (
+          <NavLink key={href} href={href} label={label} icon={icon} active={isActive(href, exact)} />
         ))}
 
         {role === "super_admin" && (
@@ -67,23 +91,8 @@ export function Sidebar({ role }: SidebarProps) {
             <div className="px-3 pb-1.5 pt-5 text-[10px] font-semibold uppercase tracking-widest text-ink-4">
               Administración
             </div>
-            {adminLinks.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  "relative flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
-                  isActive(href)
-                    ? "bg-surface-raised text-ink"
-                    : "text-ink-3 hover:bg-surface hover:text-ink-2"
-                )}
-              >
-                {isActive(href) && (
-                  <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r-full bg-signal" />
-                )}
-                <Icon className="h-4 w-4 shrink-0" />
-                {label}
-              </Link>
+            {adminLinks.map(({ href, label, icon }) => (
+              <NavLink key={href} href={href} label={label} icon={icon} active={isActive(href)} />
             ))}
           </>
         )}
@@ -93,27 +102,32 @@ export function Sidebar({ role }: SidebarProps) {
             <div className="px-3 pb-1.5 pt-5 text-[10px] font-semibold uppercase tracking-widest text-ink-4">
               Configuración
             </div>
-            {settingsLinks.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  "relative flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
-                  isActive(href)
-                    ? "bg-surface-raised text-ink"
-                    : "text-ink-3 hover:bg-surface hover:text-ink-2"
-                )}
-              >
-                {isActive(href) && (
-                  <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r-full bg-signal" />
-                )}
-                <Icon className="h-4 w-4 shrink-0" />
-                {label}
-              </Link>
+            {settingsLinks.map(({ href, label, icon }) => (
+              <NavLink key={href} href={href} label={label} icon={icon} active={isActive(href)} />
             ))}
           </>
         )}
       </nav>
+
+      {/* User section */}
+      {userEmail && (
+        <div className="border-t border-edge p-3">
+          <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-raised text-[11px] font-semibold text-ink-2">
+              {initials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[11px] text-ink-3">{shortEmail}</p>
+              <p className="text-[10px] text-ink-4">
+                {role === "super_admin" ? "Super Admin" : "Agente"}
+              </p>
+            </div>
+            {role === "super_admin" && (
+              <Shield className="h-3 w-3 shrink-0 text-signal opacity-60" />
+            )}
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
