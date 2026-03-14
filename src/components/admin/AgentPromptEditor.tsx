@@ -98,20 +98,21 @@ export function AgentPromptEditor({
         )}
       </div>
 
-      {/* Editor card */}
-      <div className="rounded-xl border border-edge bg-surface-raised overflow-hidden">
-        <Textarea
-          value={content}
-          onChange={(e) => handleChange(e.target.value)}
-          placeholder={"Eres un agente de ventas de [negocio]. Tu objetivo es ayudar a los clientes a encontrar el producto ideal, responder dudas y guiarlos hacia una compra.\n\nTono: amable, profesional y conciso.\nIdioma: español.\nLímites: no discutas precios fuera del catálogo..."}
-          className="min-h-[420px] rounded-none border-0 bg-transparent font-mono text-sm resize-none focus-visible:ring-0 focus-visible:ring-offset-0 px-4 py-4"
-          aria-label="Instrucciones del agente"
-        />
+      {/* Editor card + sticky footer — visualmente conectados */}
+      <div>
+        <div className="rounded-t-xl border border-b-0 border-edge bg-surface-raised">
+          <Textarea
+            value={content}
+            onChange={(e) => handleChange(e.target.value)}
+            placeholder={"Eres un agente de ventas de [negocio]. Tu objetivo es ayudar a los clientes a encontrar el producto ideal, responder dudas y guiarlos hacia una compra.\n\nTono: amable, profesional y conciso.\nIdioma: español.\nLímites: no discutas precios fuera del catálogo..."}
+            className="min-h-[420px] rounded-none border-0 bg-transparent font-mono text-sm resize-none focus-visible:ring-0 focus-visible:ring-offset-0 px-4 py-4"
+            aria-label="Instrucciones del agente"
+          />
+        </div>
 
-        {/* Footer */}
-        <div className="border-t border-edge bg-canvas/50 px-4 py-3">
+        {/* Footer sticky — siempre visible al fondo del viewport */}
+        <div className="sticky bottom-0 z-10 rounded-b-xl border border-edge bg-canvas/95 px-4 py-3 backdrop-blur-sm">
           <div className="flex items-center gap-4">
-            {/* Progress */}
             <div className="flex flex-1 items-center gap-3">
               <div className="flex-1 h-1.5 rounded-full bg-surface-raised overflow-hidden">
                 <div
