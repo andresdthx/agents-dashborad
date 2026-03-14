@@ -1,5 +1,5 @@
 import { getLeadStats, getLeadChartData } from "@/lib/queries/leads";
-import { getGlobalStats, getClientsSummary } from "@/lib/queries/clients";
+import { getGlobalStats, getClientsSummary, getGlobalLeadChartData } from "@/lib/queries/clients";
 import { createClient } from "@/lib/supabase/server";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { DonutChart } from "@/components/dashboard/DonutChart";
@@ -38,9 +38,10 @@ export default async function DashboardPage() {
 
   // Si es super_admin, cargar métricas globales
   if (isSuperAdmin) {
-    const [globalStats, clientsSummary] = await Promise.all([
+    const [globalStats, clientsSummary, globalChartData] = await Promise.all([
       getGlobalStats(),
       getClientsSummary(),
+      getGlobalLeadChartData(),
     ]);
 
     return (
@@ -48,6 +49,7 @@ export default async function DashboardPage() {
         globalStats={globalStats}
         clientsSummary={clientsSummary}
         displayName={displayName}
+        weeklyTrend={globalChartData.weeklyTrend}
       />
     );
   }

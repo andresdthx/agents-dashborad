@@ -121,6 +121,35 @@ export async function getClientsSummary(): Promise<ClientSummary[]> {
     .slice(0, 10);
 }
 
+export async function getGlobalLeadChartData(): Promise<{
+  weeklyTrend: { date: string; count: number }[];
+}> {
+  const supabase = createServiceClient();
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  const { data: weekRaw } = await supabase
+    .from("leads")
+    .select("created_at")
+    .gte("created_at", sevenDaysAgo.toISOString());
+
+  const days: { date: string; count: number }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push({ date: d.toISOString().slice(0, 10), count: 0 });
+  }
+  for (const row of weekRaw ?? []) {
+    const key = (row.created_at as string).slice(0, 10);
+    const day = days.find((dd) => dd.date === key);
+    if (day) day.count++;
+  }
+
+  return { weeklyTrend: days };
+}
+
 export async function getClients() {
   const supabase = createServiceClient();
 
