@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Plus, ChevronDown, ChevronUp, Trash2, Check, X } from "lucide-react";
+import { Plus, ChevronDown, ChevronUp, Trash2, Check, X, MessageSquare } from "lucide-react";
 import { getBrowserClient } from "@/lib/supabase/browser";
 import { createFaq, updateFaq, deleteFaq, toggleFaqActive } from "@/lib/queries/faqs";
 import type { ClientFaq } from "@/types/database";
@@ -22,11 +22,6 @@ interface EditState {
   answer: string;
 }
 
-interface NewFaqState {
-  question: string;
-  answer: string;
-}
-
 export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
   const [faqs, setFaqs] = useState<ClientFaq[]>(initialFaqs);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -37,21 +32,16 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [showNewForm, setShowNewForm] = useState(false);
-  const [newFaq, setNewFaq] = useState<NewFaqState>({ question: "", answer: "" });
+  const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
   const [savingNew, setSavingNew] = useState(false);
 
   const supabase = getBrowserClient();
 
-  // --- Expand / collapse ---
   const toggleExpand = useCallback((id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
-    // Si se colapsa mientras se edita, cancelar edición
-    if (editingId === id) {
-      setEditingId(null);
-    }
+    if (editingId === id) setEditingId(null);
   }, [editingId]);
 
-  // --- Edición inline ---
   const startEdit = useCallback((faq: ClientFaq) => {
     setEditingId(faq.id);
     setEditState({ question: faq.question, answer: faq.answer });
@@ -68,10 +58,7 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
       toast.error("La pregunta y la respuesta son obligatorias");
       return;
     }
-
     setSavingId(faq.id);
-
-    // Actualización optimista
     const previous = faqs;
     setFaqs((prev) =>
       prev.map((f) =>
@@ -81,14 +68,11 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
       )
     );
     setEditingId(null);
-
     const { error } = await updateFaq(supabase, faq.id, {
       question: editState.question.trim(),
       answer: editState.answer.trim(),
     });
-
     setSavingId(null);
-
     if (error) {
       setFaqs(previous);
       setEditingId(faq.id);
@@ -98,20 +82,14 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
     }
   }, [editState, faqs, supabase]);
 
-  // --- Toggle is_active ---
   const handleToggleActive = useCallback(async (faq: ClientFaq) => {
     setTogglingId(faq.id);
-
-    // Optimista
     const previous = faqs;
     setFaqs((prev) =>
       prev.map((f) => (f.id === faq.id ? { ...f, is_active: !f.is_active } : f))
     );
-
     const { error } = await toggleFaqActive(supabase, faq.id, !faq.is_active);
-
     setTogglingId(null);
-
     if (error) {
       setFaqs(previous);
       toast.error("Error al cambiar el estado");
@@ -120,18 +98,13 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
     }
   }, [faqs, supabase]);
 
-  // --- Eliminar ---
   const handleDelete = useCallback(async (id: string) => {
     setDeletingId(id);
     setConfirmDeleteId(null);
-
     const previous = faqs;
     setFaqs((prev) => prev.filter((f) => f.id !== id));
-
     const { error } = await deleteFaq(supabase, id);
-
     setDeletingId(null);
-
     if (error) {
       setFaqs(previous);
       toast.error("Error al eliminar la pregunta");
@@ -140,17 +113,13 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
     }
   }, [faqs, supabase]);
 
-  // --- Nueva FAQ ---
   const handleCreateFaq = useCallback(async () => {
     if (!newFaq.question.trim() || !newFaq.answer.trim()) {
       toast.error("La pregunta y la respuesta son obligatorias");
       return;
     }
-
     setSavingNew(true);
-
     const nextOrder = faqs.length > 0 ? Math.max(...faqs.map((f) => f.sort_order)) + 1 : 0;
-
     const { faq: created, error } = await createFaq(supabase, {
       client_id: clientId,
       question: newFaq.question.trim(),
@@ -158,9 +127,7 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
       is_active: true,
       sort_order: nextOrder,
     });
-
     setSavingNew(false);
-
     if (error || !created) {
       toast.error("Error al crear la pregunta");
     } else {
@@ -172,21 +139,22 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
     }
   }, [newFaq, faqs, supabase, clientId]);
 
-  const cancelNew = useCallback(() => {
-    setShowNewForm(false);
-    setNewFaq({ question: "", answer: "" });
-  }, []);
+  const activeCount = faqs.filter((f) => f.is_active).length;
 
   return (
-    <div className="space-y-4 max-w-2xl">
-      {/* Header con conteo y botón */}
+    <div className="max-w-2xl space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-ink-3">
-            {faqs.length === 0
-              ? "Sin preguntas frecuentes configuradas"
-              : `${faqs.filter((f) => f.is_active).length} activas de ${faqs.length} total`}
-          </p>
+        <div className="flex items-center gap-2">
+          {faqs.length > 0 && (
+            <>
+              <span className="text-sm text-ink-3">
+                {activeCount} activa{activeCount !== 1 ? "s" : ""}
+              </span>
+              <span className="text-ink-4">·</span>
+              <span className="text-sm text-ink-4">{faqs.length} total</span>
+            </>
+          )}
         </div>
         {!showNewForm && (
           <Button
@@ -200,7 +168,7 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
         )}
       </div>
 
-      {/* Lista de FAQs */}
+      {/* Lista */}
       <div className="space-y-2">
         {faqs.map((faq) => {
           const isExpanded = expandedId === faq.id;
@@ -211,20 +179,19 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
             <div
               key={faq.id}
               className={cn(
-                "rounded-lg border border-edge bg-surface-raised transition-opacity",
-                !faq.is_active && "opacity-60"
+                "rounded-xl border border-edge bg-surface-raised transition-opacity",
+                !faq.is_active && "opacity-55"
               )}
             >
-              {/* Fila de cabecera */}
-              <div className="flex items-start gap-3 p-4">
+              {/* Fila cabecera */}
+              <div className="flex items-center gap-3 px-4 py-3">
                 <button
                   type="button"
                   className="flex-1 text-left"
                   onClick={() => toggleExpand(faq.id)}
                   aria-expanded={isExpanded}
-                  aria-label={isExpanded ? "Colapsar pregunta" : "Expandir pregunta"}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <span className="text-sm font-medium text-ink leading-snug">
                       {faq.question}
                     </span>
@@ -236,9 +203,8 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
                   </div>
                 </button>
 
-                {/* Controles de fila */}
-                <div className="flex shrink-0 items-center gap-1">
-                  {/* Toggle activo/inactivo */}
+                {/* Controles */}
+                <div className="flex shrink-0 items-center gap-2">
                   <button
                     type="button"
                     onClick={() => handleToggleActive(faq)}
@@ -257,7 +223,6 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
                     />
                   </button>
 
-                  {/* Expandir/colapsar */}
                   <Button
                     type="button"
                     variant="ghost"
@@ -265,11 +230,10 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
                     onClick={() => toggleExpand(faq.id)}
                     aria-label={isExpanded ? "Colapsar" : "Expandir"}
                   >
-                    {isExpanded ? (
-                      <ChevronUp className="h-4 w-4 text-ink-3" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-ink-3" />
-                    )}
+                    {isExpanded
+                      ? <ChevronUp className="h-4 w-4 text-ink-4" />
+                      : <ChevronDown className="h-4 w-4 text-ink-4" />
+                    }
                   </Button>
                 </div>
               </div>
@@ -278,16 +242,13 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
               {isExpanded && (
                 <div className="border-t border-edge px-4 pb-4 pt-3 space-y-3">
                   {isEditing ? (
-                    /* Formulario de edición inline */
                     <div className="space-y-3">
                       <div className="space-y-1.5">
                         <Label htmlFor={`q-${faq.id}`}>Pregunta</Label>
                         <Input
                           id={`q-${faq.id}`}
                           value={editState.question}
-                          onChange={(e) =>
-                            setEditState((prev) => ({ ...prev, question: e.target.value }))
-                          }
+                          onChange={(e) => setEditState((prev) => ({ ...prev, question: e.target.value }))}
                           placeholder="¿Cuál es tu pregunta?"
                         />
                       </div>
@@ -296,51 +257,31 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
                         <Textarea
                           id={`a-${faq.id}`}
                           value={editState.answer}
-                          onChange={(e) =>
-                            setEditState((prev) => ({ ...prev, answer: e.target.value }))
-                          }
+                          onChange={(e) => setEditState((prev) => ({ ...prev, answer: e.target.value }))}
                           rows={4}
                           placeholder="Escribe la respuesta completa..."
                         />
                       </div>
                       <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => saveEdit(faq)}
-                          disabled={savingId === faq.id}
-                          aria-label="Guardar cambios"
-                        >
+                        <Button size="sm" onClick={() => saveEdit(faq)} disabled={savingId === faq.id}>
                           <Check className="h-4 w-4" />
                           {savingId === faq.id ? "Guardando..." : "Guardar"}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={cancelEdit}
-                          aria-label="Cancelar edición"
-                        >
+                        <Button size="sm" variant="outline" onClick={cancelEdit}>
                           <X className="h-4 w-4" />
                           Cancelar
                         </Button>
                       </div>
                     </div>
                   ) : (
-                    /* Vista de lectura */
                     <div className="space-y-3">
                       <p className="text-sm text-ink-2 whitespace-pre-wrap leading-relaxed">
                         {faq.answer}
                       </p>
                       <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => startEdit(faq)}
-                          aria-label="Editar esta pregunta"
-                        >
+                        <Button size="sm" variant="outline" onClick={() => startEdit(faq)}>
                           Editar
                         </Button>
-
-                        {/* Botón de eliminar con confirmación inline */}
                         {isConfirmingDelete ? (
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-ink-3">¿Eliminar definitivamente?</span>
@@ -349,16 +290,10 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
                               variant="destructive"
                               onClick={() => handleDelete(faq.id)}
                               disabled={deletingId === faq.id}
-                              aria-label="Confirmar eliminación"
                             >
                               {deletingId === faq.id ? "Eliminando..." : "Sí, eliminar"}
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => setConfirmDeleteId(null)}
-                              aria-label="Cancelar eliminación"
-                            >
+                            <Button size="sm" variant="ghost" onClick={() => setConfirmDeleteId(null)}>
                               Cancelar
                             </Button>
                           </div>
@@ -367,7 +302,6 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
                             size="sm"
                             variant="ghost"
                             onClick={() => setConfirmDeleteId(faq.id)}
-                            aria-label="Eliminar esta pregunta"
                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -385,9 +319,10 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
 
         {/* Estado vacío */}
         {faqs.length === 0 && !showNewForm && (
-          <div className="rounded-lg border border-dashed border-edge bg-canvas py-12 text-center">
-            <p className="text-sm text-ink-3">
-              Aún no hay preguntas frecuentes configuradas.
+          <div className="rounded-xl border border-dashed border-edge bg-canvas py-14 text-center">
+            <MessageSquare className="mx-auto h-8 w-8 text-ink-4" aria-hidden="true" />
+            <p className="mt-3 text-sm font-medium text-ink-3">
+              Sin preguntas frecuentes aún
             </p>
             <p className="mt-1 text-xs text-ink-4">
               Agrega preguntas para que el agente las responda automáticamente.
@@ -396,10 +331,10 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
         )}
       </div>
 
-      {/* Formulario de nueva FAQ */}
+      {/* Formulario nueva FAQ */}
       {showNewForm && (
-        <div className="rounded-lg border border-edge bg-surface-raised p-4 space-y-3">
-          <p className="text-sm font-medium text-ink">Nueva pregunta frecuente</p>
+        <div className="rounded-xl border border-edge bg-surface-raised p-4 space-y-3">
+          <p className="text-sm font-semibold text-ink">Nueva pregunta frecuente</p>
           <div className="space-y-1.5">
             <Label htmlFor="new-question">Pregunta</Label>
             <Input
@@ -421,21 +356,11 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
             />
           </div>
           <div className="flex gap-2">
-            <Button
-              size="sm"
-              onClick={handleCreateFaq}
-              disabled={savingNew}
-              aria-label="Guardar nueva pregunta"
-            >
+            <Button size="sm" onClick={handleCreateFaq} disabled={savingNew}>
               <Check className="h-4 w-4" />
               {savingNew ? "Creando..." : "Crear pregunta"}
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={cancelNew}
-              aria-label="Cancelar nueva pregunta"
-            >
+            <Button size="sm" variant="outline" onClick={() => { setShowNewForm(false); setNewFaq({ question: "", answer: "" }); }}>
               <X className="h-4 w-4" />
               Cancelar
             </Button>

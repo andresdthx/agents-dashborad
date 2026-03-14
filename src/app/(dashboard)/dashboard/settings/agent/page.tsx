@@ -28,26 +28,16 @@ export default async function AgentSettingsPage() {
 
   if (!clientId) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-lg font-semibold text-ink">Agente</h1>
-          <p className="mt-1 text-sm text-ink-3">
-            Configura el prompt que define el comportamiento de tu agente de ventas.
-          </p>
-        </div>
-
-        <div className="rounded-lg border border-dashed border-edge bg-canvas py-16 text-center">
-          <Bot className="mx-auto h-8 w-8 text-ink-4" aria-hidden="true" />
-          <p className="mt-3 text-sm font-medium text-ink-3">Sin cliente asignado</p>
-          <p className="mt-1 text-xs text-ink-4">
-            Tu cuenta aún no está vinculada a un cliente. Contacta al administrador.
-          </p>
-        </div>
+      <div className="rounded-xl border border-dashed border-edge bg-canvas py-16 text-center max-w-3xl">
+        <Bot className="mx-auto h-8 w-8 text-ink-4" aria-hidden="true" />
+        <p className="mt-3 text-sm font-medium text-ink-3">Sin cliente asignado</p>
+        <p className="mt-1 text-xs text-ink-4">
+          Tu cuenta aún no está vinculada a un cliente. Contacta al administrador.
+        </p>
       </div>
     );
   }
 
-  // Cargar cliente con plan y prompt activo usando service client
   const service = createServiceClient();
 
   const [{ data: client }, { data: prompts }, { data: plans }] = await Promise.all([
@@ -67,20 +57,11 @@ export default async function AgentSettingsPage() {
   const planName = (plans ?? []).find((p) => p.id === client?.plan_id)?.name ?? null;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-lg font-semibold text-ink">Agente</h1>
-        <p className="mt-1 text-sm text-ink-3">
-          Configura el prompt que define el comportamiento de tu agente de ventas.
-        </p>
-      </div>
-
-      <AgentPromptEditor
-        clientId={clientId}
-        promptId={activePrompt?.id ?? null}
-        initialContent={activePrompt?.content ?? ""}
-        planName={planName}
-      />
-    </div>
+    <AgentPromptEditor
+      clientId={clientId}
+      promptId={activePrompt?.id ?? null}
+      initialContent={activePrompt?.content ?? ""}
+      planName={planName}
+    />
   );
 }

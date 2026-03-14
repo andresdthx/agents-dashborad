@@ -6,9 +6,8 @@ import { saveAgentPrompt } from "@/lib/actions/agentPrompt";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Sparkles } from "lucide-react";
 
-// Límites de caracteres por plan — provisionales hasta que los planes estén definidos.
-// Actualizar estos valores cuando se formalicen los tiers.
 export const PLAN_PROMPT_LIMITS: Record<string, number> = {
   basico: 10_000,
   pro: 10_000,
@@ -16,13 +15,11 @@ export const PLAN_PROMPT_LIMITS: Record<string, number> = {
 };
 export const DEFAULT_PROMPT_LIMIT = 10_000;
 
-// Bloques del sistema que el cliente no debe ver ni editar.
 const SYSTEM_BLOCK_RES = [
   /<DatosInyectados>[\s\S]*?<\/DatosInyectados>/gi,
   /<BloqueHandoff>[\s\S]*?<\/BloqueHandoff>/gi,
 ];
 
-/** Elimina los bloques del sistema del contenido antes de mostrarlo al cliente. */
 function stripSystemBlocks(content: string): string {
   let result = content;
   for (const re of SYSTEM_BLOCK_RES) {
@@ -33,11 +30,8 @@ function stripSystemBlocks(content: string): string {
 
 interface Props {
   clientId: string;
-  /** ID del registro existente en agent_prompts (null = aún no tiene prompt). */
   promptId?: string | null;
-  /** Contenido actual del prompt (incluye <DatosInyectados> si existe). */
   initialContent?: string;
-  /** Nombre del plan del cliente, ej: "basico" | "pro" | "max". */
   planName?: string | null;
 }
 
@@ -47,7 +41,6 @@ export function AgentPromptEditor({
   initialContent = "",
   planName,
 }: Props) {
-  // El textarea solo muestra el contenido sin los bloques sensibles del sistema
   const [content, setContent] = useState(() => stripSystemBlocks(initialContent));
   const [saving, setSaving] = useState(false);
   const promptIdRef = useRef<string | null>(initialPromptId ?? null);
@@ -56,8 +49,8 @@ export function AgentPromptEditor({
   const count = content.length;
   const overLimit = count > limit;
   const pct = Math.min((count / limit) * 100, 100);
+  const isWarning = !overLimit && count / limit > 0.85;
 
-  // Prevenir que el usuario pegue bloques del sistema en el textarea
   function handleChange(value: string) {
     setContent(stripSystemBlocks(value));
   }
@@ -88,58 +81,74 @@ export function AgentPromptEditor({
   }
 
   return (
-    <div className="w-1/2 flex flex-col gap-3 h-[calc(100vh-240px)]">
-      {/* Textarea ocupa el espacio disponible y hace scroll internamente */}
-      <Textarea
-        value={content}
-        onChange={(e) => handleChange(e.target.value)}
-        placeholder="Eres un agente de ventas de [negocio]. Tu objetivo es ayudar a los clientes a encontrar el producto ideal, responder dudas y guiarlos hacia una compra..."
-        className="flex-1 min-h-0 font-mono text-sm resize-none overflow-y-auto"
-      />
+    <div className="max-w-3xl space-y-4">
+      {/* Info banner */}
+      <div className="flex items-start gap-3 rounded-xl border border-edge bg-surface-raised px-4 py-3">
+        <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" aria-hidden="true" />
+        <div className="space-y-0.5">
+          <p className="text-sm font-medium text-ink">Instrucciones del agente</p>
+          <p className="text-xs text-ink-3 leading-relaxed">
+            Define la personalidad, objetivos y restricciones de tu agente. Sé específico: menciona el nombre del negocio, productos, tono de comunicación y límites de la conversación.
+          </p>
+        </div>
+        {planName && (
+          <span className="ml-auto shrink-0 rounded-full border border-edge px-2.5 py-0.5 text-[11px] font-medium text-ink-3 whitespace-nowrap">
+            Plan {planName}
+          </span>
+        )}
+      </div>
 
-      {/* Controles siempre visibles — no dependen del scroll */}
-      <div className="flex-shrink-0 border-t border-edge pt-3 pb-1 space-y-3">
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] text-ink-4">
-              {planName
-                ? `Plan ${planName} · límite ${limit.toLocaleString()} caracteres`
-                : `Límite ${limit.toLocaleString()} caracteres`}
-            </span>
-            <span
-              className={cn(
-                "text-xs tabular-nums font-medium",
-                overLimit
-                  ? "text-destructive"
-                  : count / limit > 0.85
-                  ? "text-amber-500"
-                  : "text-ink-4"
-              )}
+      {/* Editor card */}
+      <div className="rounded-xl border border-edge bg-surface-raised overflow-hidden">
+        <Textarea
+          value={content}
+          onChange={(e) => handleChange(e.target.value)}
+          placeholder={"Eres un agente de ventas de [negocio]. Tu objetivo es ayudar a los clientes a encontrar el producto ideal, responder dudas y guiarlos hacia una compra.\n\nTono: amable, profesional y conciso.\nIdioma: español.\nLímites: no discutas precios fuera del catálogo..."}
+          className="min-h-[420px] rounded-none border-0 bg-transparent font-mono text-sm resize-none focus-visible:ring-0 focus-visible:ring-offset-0 px-4 py-4"
+          aria-label="Instrucciones del agente"
+        />
+
+        {/* Footer */}
+        <div className="border-t border-edge bg-canvas/50 px-4 py-3">
+          <div className="flex items-center gap-4">
+            {/* Progress */}
+            <div className="flex flex-1 items-center gap-3">
+              <div className="flex-1 h-1.5 rounded-full bg-surface-raised overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all duration-300",
+                    overLimit ? "bg-destructive" : isWarning ? "bg-amber-500" : "bg-signal"
+                  )}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <span
+                className={cn(
+                  "shrink-0 text-xs tabular-nums font-medium",
+                  overLimit ? "text-destructive" : isWarning ? "text-amber-500" : "text-ink-4"
+                )}
+              >
+                {count.toLocaleString()} / {limit.toLocaleString()}
+              </span>
+            </div>
+
+            <Button
+              onClick={handleSave}
+              disabled={saving || overLimit || count === 0}
+              size="sm"
             >
-              {count.toLocaleString()} / {limit.toLocaleString()}
-            </span>
+              {saving ? "Guardando..." : "Guardar"}
+            </Button>
           </div>
-          <div className="h-1 w-full rounded-full bg-surface-raised overflow-hidden">
-            <div
-              className={cn(
-                "h-full rounded-full transition-all",
-                overLimit ? "bg-destructive" : pct > 85 ? "bg-amber-500" : "bg-signal"
-              )}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
+
           {overLimit && (
-            <p className="text-xs text-destructive">
-              Excede el límite de tu plan en {(count - limit).toLocaleString()} caracteres.
+            <p className="mt-2 text-xs text-destructive">
+              Excede el límite en {(count - limit).toLocaleString()} caracteres.
               {planName === "basico" && " Actualiza al Plan Pro para ampliar el límite."}
               {planName === "pro" && " Actualiza al Plan Max para ampliar el límite."}
             </p>
           )}
         </div>
-
-        <Button onClick={handleSave} disabled={saving || overLimit || count === 0}>
-          {saving ? "Guardando..." : "Guardar prompt"}
-        </Button>
       </div>
     </div>
   );
