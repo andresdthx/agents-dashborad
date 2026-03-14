@@ -81,9 +81,9 @@ export function AgentPromptEditor({
   }
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="flex h-full max-w-3xl flex-col">
       {/* Info banner */}
-      <div className="flex items-start gap-3 rounded-xl border border-edge bg-surface-raised px-4 py-3">
+      <div className="shrink-0 mb-4 flex items-start gap-3 rounded-xl border border-edge bg-surface-raised px-4 py-3">
         <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" aria-hidden="true" />
         <div className="space-y-0.5">
           <p className="text-sm font-medium text-ink">Instrucciones del agente</p>
@@ -98,58 +98,56 @@ export function AgentPromptEditor({
         )}
       </div>
 
-      {/* Editor card + sticky footer — visualmente conectados */}
-      <div>
-        <div className="rounded-t-xl border border-b-0 border-edge bg-surface-raised">
-          <Textarea
-            value={content}
-            onChange={(e) => handleChange(e.target.value)}
-            placeholder={"Eres un agente de ventas de [negocio]. Tu objetivo es ayudar a los clientes a encontrar el producto ideal, responder dudas y guiarlos hacia una compra.\n\nTono: amable, profesional y conciso.\nIdioma: español.\nLímites: no discutas precios fuera del catálogo..."}
-            className="min-h-[420px] rounded-none border-0 bg-transparent font-mono text-sm resize-none focus-visible:ring-0 focus-visible:ring-offset-0 px-4 py-4"
-            aria-label="Instrucciones del agente"
-          />
-        </div>
+      {/* Editor — ocupa el espacio restante */}
+      <div className="min-h-0 flex-1 rounded-t-xl border border-b-0 border-edge bg-surface-raised">
+        <Textarea
+          value={content}
+          onChange={(e) => handleChange(e.target.value)}
+          placeholder={"Eres un agente de ventas de [negocio]. Tu objetivo es ayudar a los clientes a encontrar el producto ideal, responder dudas y guiarlos hacia una compra.\n\nTono: amable, profesional y conciso.\nIdioma: español.\nLímites: no discutas precios fuera del catálogo..."}
+          className="h-full rounded-none border-0 bg-transparent font-mono text-sm resize-none focus-visible:ring-0 focus-visible:ring-offset-0 px-4 py-4"
+          aria-label="Instrucciones del agente"
+        />
+      </div>
 
-        {/* Footer sticky — siempre visible al fondo del viewport */}
-        <div className="sticky bottom-0 z-10 rounded-b-xl border border-edge bg-canvas/95 px-4 py-3 backdrop-blur-sm">
-          <div className="flex items-center gap-4">
-            <div className="flex flex-1 items-center gap-3">
-              <div className="flex-1 h-1.5 rounded-full bg-surface-raised overflow-hidden">
-                <div
-                  className={cn(
-                    "h-full rounded-full transition-all duration-300",
-                    overLimit ? "bg-destructive" : isWarning ? "bg-amber-500" : "bg-signal"
-                  )}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              <span
+      {/* Footer — siempre al fondo, pegado al editor */}
+      <div className="shrink-0 rounded-b-xl border border-edge bg-canvas px-4 py-3">
+        <div className="flex items-center gap-4">
+          <div className="flex flex-1 items-center gap-3">
+            <div className="flex-1 h-1.5 rounded-full bg-surface-raised overflow-hidden">
+              <div
                 className={cn(
-                  "shrink-0 text-xs tabular-nums font-medium",
-                  overLimit ? "text-destructive" : isWarning ? "text-amber-500" : "text-ink-4"
+                  "h-full rounded-full transition-all duration-300",
+                  overLimit ? "bg-destructive" : isWarning ? "bg-amber-500" : "bg-signal"
                 )}
-              >
-                {count.toLocaleString()} / {limit.toLocaleString()}
-              </span>
+                style={{ width: `${pct}%` }}
+              />
             </div>
-
-            <Button
-              onClick={handleSave}
-              disabled={saving || overLimit || count === 0}
-              size="sm"
+            <span
+              className={cn(
+                "shrink-0 text-xs tabular-nums font-medium",
+                overLimit ? "text-destructive" : isWarning ? "text-amber-500" : "text-ink-4"
+              )}
             >
-              {saving ? "Guardando..." : "Guardar"}
-            </Button>
+              {count.toLocaleString()} / {limit.toLocaleString()}
+            </span>
           </div>
 
-          {overLimit && (
-            <p className="mt-2 text-xs text-destructive">
-              Excede el límite en {(count - limit).toLocaleString()} caracteres.
-              {planName === "basico" && " Actualiza al Plan Pro para ampliar el límite."}
-              {planName === "pro" && " Actualiza al Plan Max para ampliar el límite."}
-            </p>
-          )}
+          <Button
+            onClick={handleSave}
+            disabled={saving || overLimit || count === 0}
+            size="sm"
+          >
+            {saving ? "Guardando..." : "Guardar"}
+          </Button>
         </div>
+
+        {overLimit && (
+          <p className="mt-2 text-xs text-destructive">
+            Excede el límite en {(count - limit).toLocaleString()} caracteres.
+            {planName === "basico" && " Actualiza al Plan Pro para ampliar el límite."}
+            {planName === "pro" && " Actualiza al Plan Max para ampliar el límite."}
+          </p>
+        )}
       </div>
     </div>
   );

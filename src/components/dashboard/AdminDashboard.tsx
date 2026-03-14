@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { GlobalStats, ClientSummary } from "@/lib/queries/clients";
 import { Users, TrendingUp, PauseCircle, Activity } from "lucide-react";
+import { WeeklySparkline } from "@/components/dashboard/WeeklySparkline";
 
 interface AdminDashboardProps {
   globalStats: GlobalStats;
   clientsSummary: ClientSummary[];
   displayName: string;
+  weeklyTrend: { date: string; count: number }[];
 }
 
 function StatTile({
@@ -76,6 +78,7 @@ export function AdminDashboard({
   globalStats,
   clientsSummary,
   displayName,
+  weeklyTrend,
 }: AdminDashboardProps) {
   const {
     totalClients,
@@ -194,6 +197,13 @@ export function AdminDashboard({
           <DistributionBar hot={globalHot} warm={globalWarm} cold={globalCold} />
         </div>
       )}
+
+      {/* Tendencia global últimos 7 días */}
+      <WeeklySparkline
+        data={weeklyTrend}
+        title="Leads globales últimos 7 días"
+        emptyLabel="Sin actividad esta semana"
+      />
 
       {/* Top 10 clientes por leads */}
       {clientsSummary.length > 0 && (

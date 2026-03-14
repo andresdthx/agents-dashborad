@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 
 const tabs = [
   { label: "Agente", href: "/dashboard/settings/agent", icon: Bot },
-  { label: "Preguntas frecuentes", href: "/dashboard/settings/faqs", icon: MessageSquare },
   { label: "Transferencias", href: "/dashboard/settings/handoff", icon: ArrowLeftRight },
+  { label: "Preguntas frecuentes", href: "/dashboard/settings/faqs", icon: MessageSquare },
 ];
 
 export function SettingsTabs() {

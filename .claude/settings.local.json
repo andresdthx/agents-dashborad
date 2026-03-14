@@ -18,7 +18,9 @@
       "Bash(py --version 2>/dev/null || py3 --version 2>/dev/null || where python 2>/dev/null)",
       "Bash(cd \"C:\\\\Users\\\\andres.canchila_prag\\\\Documents\\\\personal_devs\\\\web\" && python \".claude/skills/ui-ux-pro-max/scripts/search.py\" \"SaaS leads CRM dashboard analytics professional minimal\" --design-system -p \"AgentsLeads\" -f markdown 2>&1 | head -120)",
       "Bash(find \"C:/Users/andres.canchila_prag/Documents/personal_devs/web/src/app/\\(dashboard\\)/dashboard/settings\" -type f | head -30)",
-      "Bash(python3 \"C:/Users/andres.canchila_prag/Documents/personal_devs/web/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"SaaS dashboard settings professional enterprise\" --design-system -p \"AgentsLeads Settings\" -f markdown 2>/dev/null || python \"C:/Users/andres.canchila_prag/Documents/personal_devs/web/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"SaaS dashboard settings professional enterprise\" --design-system -p \"AgentsLeads Settings\" -f markdown)"
+      "Bash(python3 \"C:/Users/andres.canchila_prag/Documents/personal_devs/web/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"SaaS dashboard settings professional enterprise\" --design-system -p \"AgentsLeads Settings\" -f markdown 2>/dev/null || python \"C:/Users/andres.canchila_prag/Documents/personal_devs/web/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"SaaS dashboard settings professional enterprise\" --design-system -p \"AgentsLeads Settings\" -f markdown)",
+      "Bash(grep -r \"recharts\\\\|visx\\\\|nivo\\\\|chart.js\" /c/Users/andres.canchila_prag/Documents/personal_devs/web/src --include=\"*.tsx\" --include=\"*.ts\" -l 2>/dev/null | head -20)",
+      "Bash(find /c/Users/andres.canchila_prag/Documents/personal_devs/web/src/components -type f -name \"*.tsx\" | xargs grep -l \"SVG\\\\|svg\\\\|chart\\\\|Chart\" | head -10)"
     ]
   }
 }

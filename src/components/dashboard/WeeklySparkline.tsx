@@ -1,5 +1,7 @@
 interface WeeklySparklineProps {
   data: { date: string; count: number }[];
+  title?: string;
+  emptyLabel?: string;
 }
 
 const DAY_NAMES = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"];
@@ -11,7 +13,11 @@ const PAD = { top: 16, bottom: 22, left: 8, right: 8 };
 const PLOT_W = VW - PAD.left - PAD.right;
 const PLOT_H = VH - PAD.top - PAD.bottom;
 
-export function WeeklySparkline({ data }: WeeklySparklineProps) {
+export function WeeklySparkline({
+  data,
+  title = "Clientes últimos 7 días",
+  emptyLabel = "Sin leads esta semana",
+}: WeeklySparklineProps) {
   const total = data.reduce((s, d) => s + d.count, 0);
   const maxVal = Math.max(...data.map((d) => d.count), 1);
   const n = data.length;
@@ -34,7 +40,7 @@ export function WeeklySparkline({ data }: WeeklySparklineProps) {
   return (
     <div className="rounded-xl border border-edge bg-surface-raised p-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="text-xs font-semibold text-ink-2">Clientes últimos 7 días</h2>
+        <h2 className="text-xs font-semibold text-ink-2">{title}</h2>
         <div className="flex items-center gap-3">
           {n > 0 && total > 0 && (
             <span className="text-[10px] text-ink-4">
@@ -49,7 +55,7 @@ export function WeeklySparkline({ data }: WeeklySparklineProps) {
 
       {total === 0 ? (
         <div className="mt-3 flex h-[58px] items-center justify-center rounded-lg bg-canvas">
-          <p className="text-xs text-ink-4">Sin leads esta semana</p>
+          <p className="text-xs text-ink-4">{emptyLabel}</p>
         </div>
       ) : (
         /* Container uses CSS aspect-ratio so the SVG scales without distortion */
