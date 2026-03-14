@@ -1,5 +1,5 @@
 import { getLeadStats, getLeadChartData } from "@/lib/queries/leads";
-import { getGlobalStats, getClientsSummary } from "@/lib/queries/clients";
+import { getGlobalStats, getClientsSummary, getGlobalLeadChartData } from "@/lib/queries/clients";
 import { createClient } from "@/lib/supabase/server";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { DonutChart } from "@/components/dashboard/DonutChart";
@@ -15,9 +15,17 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  console.log('user', user)
+// Obtener rol, client_id y nombre del negocio en una sola query
+  const { data: clientUserData } = await supabase
+    .from("client_users")
+    .select("role, client_id, clients(name)")
+    .eq("user_id", user?.id ?? "")
+    .limit(1)
+    .single();
 
+  const clientName = (clientUserData?.clients as { name?: string } | null)?.name ?? null;
   const rawName =
+    clientName ??
     user?.user_metadata?.full_name ??
     user?.email?.split("@")[0]?.split(".")[0] ??
     "usuario";
@@ -26,21 +34,14 @@ export default async function DashboardPage() {
       ? rawName.charAt(0).toUpperCase() + rawName.slice(1)
       : "usuario";
 
-  // Obtener rol del usuario
-  const { data: clientUserData } = await supabase
-    .from("client_users")
-    .select("role, client_id")
-    .eq("user_id", user?.id ?? "")
-    .limit(1)
-    .single();
-
   const isSuperAdmin = clientUserData?.role === "super_admin";
 
   // Si es super_admin, cargar métricas globales
   if (isSuperAdmin) {
-    const [globalStats, clientsSummary] = await Promise.all([
+    const [globalStats, clientsSummary, globalChartData] = await Promise.all([
       getGlobalStats(),
       getClientsSummary(),
+      getGlobalLeadChartData(),
     ]);
 
     return (
@@ -48,6 +49,7 @@ export default async function DashboardPage() {
         globalStats={globalStats}
         clientsSummary={clientsSummary}
         displayName={displayName}
+        weeklyTrend={globalChartData.weeklyTrend}
       />
     );
   }
