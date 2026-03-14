@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Check, Plus, Trash2, Users, X } from "lucide-react";
+import { AlertTriangle, Check, Plus, Trash2, Users, X, ArrowLeftRight } from "lucide-react";
 import { getBrowserClient } from "@/lib/supabase/browser";
 import { createHandoff, updateHandoff, deleteHandoff, type ClientHandoff } from "@/lib/queries/handoffs";
 import { Button } from "@/components/ui/button";
@@ -35,8 +35,6 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
 
   const supabase = getBrowserClient();
 
-  // ── Edición inline ──────────────────────────────────────────────────────────
-
   const startEdit = useCallback((h: ClientHandoff) => {
     setEditingId(h.id);
     setEditState({ trigger: h.trigger, urgent: h.urgent, response: h.response ?? "" });
@@ -52,20 +50,17 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
     }
     setSavingId(h.id);
     const previous = handoffs;
-    const updated = handoffs.map((item) =>
+    setHandoffs(handoffs.map((item) =>
       item.id === h.id
         ? { ...item, trigger: editState.trigger.trim(), urgent: editState.urgent, response: editState.response.trim() || null }
         : item
-    );
-    setHandoffs(updated);
+    ));
     setEditingId(null);
-
     const { error } = await updateHandoff(supabase, h.id, {
       trigger: editState.trigger.trim(),
       urgent: editState.urgent,
       response: editState.response.trim() || null,
     });
-
     if (error) {
       setHandoffs(previous);
       setEditingId(h.id);
@@ -74,18 +69,14 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
       toast.success("Regla actualizada");
     }
     setSavingId(null);
-  }, [editState, handoffs, supabase, clientId]);
-
-  // ── Eliminar ───────────────────────────────────────────────────────────────
+  }, [editState, handoffs, supabase]);
 
   const handleDelete = useCallback(async (id: string) => {
     setDeletingId(id);
     setConfirmDeleteId(null);
     const previous = handoffs;
     setHandoffs((prev) => prev.filter((h) => h.id !== id));
-
     const { error } = await deleteHandoff(supabase, id);
-
     if (error) {
       setHandoffs(previous);
       toast.error("Error al eliminar");
@@ -93,9 +84,7 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
       toast.success("Regla eliminada");
     }
     setDeletingId(null);
-  }, [handoffs, supabase, clientId]);
-
-  // ── Crear ──────────────────────────────────────────────────────────────────
+  }, [handoffs, supabase]);
 
   const handleCreate = useCallback(async () => {
     if (!newHandoff.trigger.trim()) {
@@ -104,7 +93,6 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
     }
     setSavingNew(true);
     const nextOrder = handoffs.length > 0 ? Math.max(...handoffs.map((h) => h.sort_order)) + 1 : 0;
-
     const { handoff: created, error } = await createHandoff(supabase, {
       client_id: clientId,
       trigger: newHandoff.trigger.trim(),
@@ -112,7 +100,6 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
       response: newHandoff.response.trim() || undefined,
       sort_order: nextOrder,
     });
-
     if (error || !created) {
       toast.error("Error al crear la regla");
     } else {
@@ -124,10 +111,8 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
     setSavingNew(false);
   }, [newHandoff, handoffs, supabase, clientId]);
 
-  // ── Render ─────────────────────────────────────────────────────────────────
-
   return (
-    <div className="space-y-4 max-w-2xl">
+    <div className="max-w-2xl space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-ink-3">
@@ -150,7 +135,7 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
           const isConfirmingDelete = confirmDeleteId === h.id;
 
           return (
-            <div key={h.id} className="rounded-lg border border-edge bg-surface-raised">
+            <div key={h.id} className="rounded-xl border border-edge bg-surface-raised">
               {isEditing ? (
                 <div className="p-4 space-y-3">
                   <div className="space-y-1.5">
@@ -169,7 +154,8 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
                   />
                   <div className="space-y-1.5">
                     <Label htmlFor={`response-${h.id}`}>
-                      Respuesta al cliente <span className="text-ink-4 font-normal">(opcional)</span>
+                      Respuesta al cliente{" "}
+                      <span className="text-ink-4 font-normal">(opcional)</span>
                     </Label>
                     <Textarea
                       id={`response-${h.id}`}
@@ -194,17 +180,36 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-start gap-3 p-4">
-                  <UrgencyIcon urgent={h.urgent} />
+                <div className="flex items-start gap-3 px-4 py-3">
+                  {/* Urgency indicator */}
+                  <div className={cn(
+                    "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
+                    h.urgent ? "bg-destructive/10" : "bg-surface-raised border border-edge"
+                  )}>
+                    {h.urgent
+                      ? <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                      : <Users className="h-3.5 w-3.5 text-ink-4" />
+                    }
+                  </div>
+
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-ink leading-snug">{h.trigger}</p>
-                    <p className={cn("mt-0.5 text-xs", h.urgent ? "text-destructive" : "text-ink-4")}>
-                      {h.urgent ? "Urgente" : "Normal"}
-                    </p>
-                    {h.response && (
-                      <p className="mt-1 text-xs text-ink-3 italic">"{h.response}"</p>
-                    )}
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className={cn(
+                        "text-[11px] font-medium",
+                        h.urgent ? "text-destructive" : "text-ink-4"
+                      )}>
+                        {h.urgent ? "Urgente" : "Normal"}
+                      </span>
+                      {h.response && (
+                        <>
+                          <span className="text-ink-4">·</span>
+                          <span className="text-[11px] text-ink-3 italic truncate">"{h.response}"</span>
+                        </>
+                      )}
+                    </div>
                   </div>
+
                   <div className="flex shrink-0 items-center gap-1">
                     <Button size="sm" variant="outline" onClick={() => startEdit(h)}>
                       Editar
@@ -240,11 +245,13 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
           );
         })}
 
+        {/* Estado vacío */}
         {handoffs.length === 0 && !showNewForm && (
-          <div className="rounded-lg border border-dashed border-edge bg-canvas py-12 text-center">
-            <p className="text-sm text-ink-3">Sin reglas de transferencia configuradas.</p>
+          <div className="rounded-xl border border-dashed border-edge bg-canvas py-14 text-center">
+            <ArrowLeftRight className="mx-auto h-8 w-8 text-ink-4" aria-hidden="true" />
+            <p className="mt-3 text-sm font-medium text-ink-3">Sin reglas de transferencia</p>
             <p className="mt-1 text-xs text-ink-4">
-              Agrega cuándo el agente debe transferir la conversación a tu equipo.
+              Agrega cuándo el agente debe pasar la conversación a tu equipo.
             </p>
           </div>
         )}
@@ -252,8 +259,8 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
 
       {/* Formulario nueva regla */}
       {showNewForm && (
-        <div className="rounded-lg border border-edge bg-surface-raised p-4 space-y-3">
-          <p className="text-sm font-medium text-ink">Nueva regla de transferencia</p>
+        <div className="rounded-xl border border-edge bg-surface-raised p-4 space-y-3">
+          <p className="text-sm font-semibold text-ink">Nueva regla de transferencia</p>
           <div className="space-y-1.5">
             <Label htmlFor="new-trigger">Disparador</Label>
             <Input
@@ -273,7 +280,8 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
           />
           <div className="space-y-1.5">
             <Label htmlFor="new-response">
-              Respuesta al cliente <span className="text-ink-4 font-normal">(opcional)</span>
+              Respuesta al cliente{" "}
+              <span className="text-ink-4 font-normal">(opcional)</span>
             </Label>
             <Textarea
               id="new-response"
@@ -308,6 +316,7 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
 
 // ── Sub-componentes ────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function UrgencyIcon({ urgent }: { urgent: boolean }) {
   return urgent ? (
     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
@@ -325,8 +334,10 @@ function UrgencyToggle({ value, onChange }: { value: boolean; onChange: (v: bool
           type="button"
           onClick={() => onChange(false)}
           className={cn(
-            "flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors",
-            !value ? "border-signal bg-signal/10 text-ink font-medium" : "border-edge bg-canvas text-ink-3 hover:border-edge-strong"
+            "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
+            !value
+              ? "border-signal/40 bg-signal/10 text-ink font-medium"
+              : "border-edge bg-canvas text-ink-3 hover:border-edge-strong"
           )}
         >
           <Users className="h-4 w-4" />
@@ -336,8 +347,10 @@ function UrgencyToggle({ value, onChange }: { value: boolean; onChange: (v: bool
           type="button"
           onClick={() => onChange(true)}
           className={cn(
-            "flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors",
-            value ? "border-destructive/40 bg-destructive/10 text-destructive font-medium" : "border-edge bg-canvas text-ink-3 hover:border-edge-strong"
+            "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
+            value
+              ? "border-destructive/40 bg-destructive/10 text-destructive font-medium"
+              : "border-edge bg-canvas text-ink-3 hover:border-edge-strong"
           )}
         >
           <AlertTriangle className="h-4 w-4" />
@@ -345,7 +358,9 @@ function UrgencyToggle({ value, onChange }: { value: boolean; onChange: (v: bool
         </button>
       </div>
       <p className="text-[11px] text-ink-4">
-        {value ? '"Te comunico ahora con alguien del equipo."' : '"Eso lo tiene que revisar el equipo. Te paso con ellos."'}
+        {value
+          ? '"Te comunico ahora con alguien del equipo."'
+          : '"Eso lo tiene que revisar el equipo. Te paso con ellos."'}
       </p>
     </div>
   );

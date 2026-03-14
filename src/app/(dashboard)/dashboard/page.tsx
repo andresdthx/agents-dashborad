@@ -15,9 +15,17 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  console.log('user', user)
+// Obtener rol, client_id y nombre del negocio en una sola query
+  const { data: clientUserData } = await supabase
+    .from("client_users")
+    .select("role, client_id, clients(name)")
+    .eq("user_id", user?.id ?? "")
+    .limit(1)
+    .single();
 
+  const clientName = (clientUserData?.clients as { name?: string } | null)?.name ?? null;
   const rawName =
+    clientName ??
     user?.user_metadata?.full_name ??
     user?.email?.split("@")[0]?.split(".")[0] ??
     "usuario";
@@ -25,14 +33,6 @@ export default async function DashboardPage() {
     typeof rawName === "string"
       ? rawName.charAt(0).toUpperCase() + rawName.slice(1)
       : "usuario";
-
-  // Obtener rol del usuario
-  const { data: clientUserData } = await supabase
-    .from("client_users")
-    .select("role, client_id")
-    .eq("user_id", user?.id ?? "")
-    .limit(1)
-    .single();
 
   const isSuperAdmin = clientUserData?.role === "super_admin";
 
