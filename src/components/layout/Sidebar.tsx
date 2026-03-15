@@ -22,7 +22,7 @@ interface SidebarProps {
 }
 
 const clientLinks = [
-  { href: "/dashboard", label: "Inicio", icon: LayoutDashboard, exact: true },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/dashboard/leads", label: "Clientes", icon: Users },
 ];
 

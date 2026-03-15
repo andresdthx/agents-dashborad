@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getClientById, getPlans } from "@/lib/queries/clients";
 import { getFaqsByClientId } from "@/lib/queries/faqs.server";
@@ -5,6 +6,17 @@ import { ClientForm } from "@/components/admin/ClientForm";
 import { ClientTabNav } from "@/components/admin/ClientTabNav";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const { client } = await getClientById(id);
+  if (!client) return { title: "Editar cliente | AgentsLeads" };
+  return { title: `${client.name} | AgentsLeads` };
+}
 
 export default async function EditClientPage({
   params,

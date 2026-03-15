@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getClients } from "@/lib/queries/clients";
 import { ClientsTable } from "@/components/admin/ClientsTable";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Clientes | AgentsLeads",
+};
 
 export default async function AdminClientsPage() {
   const { clients } = await getClients();

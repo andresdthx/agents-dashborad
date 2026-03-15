@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { getBrowserClient } from "@/lib/supabase/browser";
@@ -14,6 +15,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Moon, Sun } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+import { useNotificationSound } from "@/hooks/useNotificationSound";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 interface TopBarProps {
   userEmail: string;
@@ -82,6 +86,15 @@ export function TopBar({ userEmail, clientId }: TopBarProps) {
     }, 2000);
   }, [router]);
 
+  const { playNotificationSound } = useNotificationSound();
+  const { notifications, clearNotifications, markAllRead, unread } = useRealtimeNotifications(
+    clientId,
+    { onDataChange: handleLeadChange, onNewNotification: playNotificationSound }
+  );
+
+  // Actualiza document.title con el conteo de no leídas
+  useDocumentTitle(unread);
+
   async function handleSignOut() {
     const supabase = getBrowserClient();
     await supabase.auth.signOut();
@@ -95,7 +108,9 @@ export function TopBar({ userEmail, clientId }: TopBarProps) {
   return (
     <header className="flex h-14 items-center justify-between border-b border-edge bg-canvas px-5">
       <div className="flex items-center gap-3">
-        <span className="text-lg font-medium text-ink-2">{pageLabel}</span>
+        <Link href="/dashboard">
+          <span className="text-lg font-medium text-ink-2">{pageLabel}</span>
+        </Link>
         {dateStr && (
           <>
             <span className="hidden text-ink-4 sm:block">·</span>
@@ -105,7 +120,12 @@ export function TopBar({ userEmail, clientId }: TopBarProps) {
       </div>
 
       <div className="flex items-center gap-1.5">
-        <NotificationBell clientId={clientId} onDataChange={handleLeadChange} />
+        <NotificationBell
+          notifications={notifications}
+          unread={unread}
+          clearNotifications={clearNotifications}
+          markAllRead={markAllRead}
+        />
 
         <ThemeToggle />
 

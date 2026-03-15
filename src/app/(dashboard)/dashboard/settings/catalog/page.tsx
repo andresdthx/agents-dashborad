@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getCatalogConfig } from "@/lib/actions/catalogConfig";
 import { CatalogColMappingManager } from "@/components/admin/CatalogColMappingManager";
 import { TableProperties } from "lucide-react";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Configuración · Catálogo | AgentsLeads",
+};
 
 export default async function CatalogSettingsPage() {
   const supabase = await createClient();

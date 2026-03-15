@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { AgentPromptEditor } from "@/components/admin/AgentPromptEditor";
 import { Bot } from "lucide-react";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Configuración · Agente | AgentsLeads",
+};
 
 export default async function AgentSettingsPage() {
   const supabase = await createClient();

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, CalendarDays, PauseCircle } from "lucide-react";
+import { Users, CalendarDays } from "lucide-react";
 
 interface Stats {
   total: number;
@@ -189,16 +189,7 @@ export function StatsCards({ stats }: { stats: Stats }) {
         )}
       </div>
 
-      {/* Distribution bar */}
-      {classified > 0 && (
-        <div className="flex h-1.5 overflow-hidden rounded-full">
-          <div style={{ width: `${hotPct}%` }} className="bg-lead-hot transition-all" />
-          <div style={{ width: `${warmPct}%` }} className="bg-lead-warm transition-all" />
-          <div style={{ width: `${coldPct}%` }} className="bg-lead-cold transition-all" />
-        </div>
-      )}
-
-      {/* Operational strip — total / today / paused */}
+      {/* Operational strip — total / today */}
       <div className="flex divide-x divide-edge overflow-hidden rounded-2xl border border-edge bg-surface-raised shadow-sm">
         <Link
           href="/dashboard/leads"
@@ -219,29 +210,6 @@ export function StatsCards({ stats }: { stats: Stats }) {
             <TodayDelta today={stats.today} yesterday={stats.yesterday} />
           </div>
         </div>
-
-        <Link
-          href="/dashboard/leads?paused=true"
-          className={`flex flex-1 items-center gap-3 px-5 py-4 transition-colors ${
-            stats.paused > 0
-              ? "bg-bot-paused-surface hover:bg-bot-paused/15"
-              : "hover:bg-surface-overlay"
-          }`}
-        >
-          <PauseCircle
-            className={`h-4 w-4 shrink-0 ${stats.paused > 0 ? "text-bot-paused-text" : "text-ink-4"}`}
-          />
-          <div>
-            <p className="text-[11px] text-ink-3">Agente pausado</p>
-            <p
-              className={`font-mono text-2xl font-bold tabular-nums ${
-                stats.paused > 0 ? "text-bot-paused-text" : "text-ink"
-              }`}
-            >
-              {stats.paused}
-            </p>
-          </div>
-        </Link>
       </div>
     </div>
   );

@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getReservationConfig } from "@/lib/actions/reservationConfig";
 import { ReservationBlockManager } from "@/components/admin/ReservationBlockManager";
 import { CalendarCheck } from "lucide-react";
 // CalendarCheck is also re-exported from ReservationBlockManager for convenience
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Configuración · Reservas | AgentsLeads",
+};
 
 export default async function ReservationSettingsPage() {
   const supabase = await createClient();

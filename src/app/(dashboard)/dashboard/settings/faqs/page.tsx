@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnClientFaqs } from "@/lib/queries/faqs.server";
 import { ClientFaqsManager } from "@/components/admin/ClientFaqsManager";
 import { MessageSquare } from "lucide-react";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Configuración · FAQs | AgentsLeads",
+};
 
 export default async function AgentFaqsPage() {
   const supabase = await createClient();

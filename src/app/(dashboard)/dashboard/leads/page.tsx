@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLeads } from "@/lib/queries/leads";
 import { LeadsTable } from "@/components/leads/LeadsTable";
 
@@ -14,6 +15,10 @@ interface SearchParams {
   sortBy?: string;
   sortDir?: string;
 }
+
+export const metadata: Metadata = {
+  title: "Leads | AgentsLeads",
+};
 
 export default async function LeadsPage({
   searchParams,

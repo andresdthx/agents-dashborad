@@ -1,7 +1,6 @@
 "use client";
 
-import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
-import { useNotificationSound } from "@/hooks/useNotificationSound";
+import type { Notification } from "@/hooks/useRealtimeNotifications";
 import { Bell } from "lucide-react";
 import {
   DropdownMenu,
@@ -15,16 +14,18 @@ import { formatDistanceToNow } from "@/lib/utils";
 import Link from "next/link";
 
 interface NotificationBellProps {
-  clientId: string | null;
-  onDataChange?: () => void;
+  notifications: Notification[];
+  unread: number;
+  clearNotifications: () => void;
+  markAllRead: () => void;
 }
 
-export function NotificationBell({ clientId, onDataChange }: NotificationBellProps) {
-  const { playNotificationSound } = useNotificationSound();
-  const { notifications, clearNotifications, markAllRead, unread } = useRealtimeNotifications(
-    clientId,
-    { onDataChange, onNewNotification: playNotificationSound }
-  );
+export function NotificationBell({
+  notifications,
+  unread,
+  clearNotifications,
+  markAllRead,
+}: NotificationBellProps) {
 
   return (
     <DropdownMenu

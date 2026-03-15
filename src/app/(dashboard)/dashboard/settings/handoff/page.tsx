@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnClientHandoffs } from "@/lib/queries/handoffs.server";
 import { HandoffRulesManager } from "@/components/admin/HandoffRulesManager";
 import { ArrowLeftRight } from "lucide-react";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Configuración · Transferencias | AgentsLeads",
+};
 
 export default async function HandoffSettingsPage() {
   const supabase = await createClient();
