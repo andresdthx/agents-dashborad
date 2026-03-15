@@ -10,6 +10,8 @@ import {
   Bot,
   ArrowLeftRight,
   Shield,
+  CalendarCheck,
+  TableProperties,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -28,8 +30,10 @@ const adminLinks = [{ href: "/admin/clients", label: "Clientes", icon: Building2
 
 const settingsLinks = [
   { href: "/dashboard/settings/agent", label: "Entrenar Agente", icon: Bot },
+  { href: "/dashboard/settings/reservation", label: "Campos de confirmación", icon: CalendarCheck },
   { href: "/dashboard/settings/handoff", label: "Transferencias", icon: ArrowLeftRight },
   { href: "/dashboard/settings/faqs", label: "Preguntas frecuentes", icon: MessageSquare },
+  { href: "/dashboard/settings/catalog", label: "Columnas del Sheet", icon: TableProperties },
 ];
 
 function NavLink({
