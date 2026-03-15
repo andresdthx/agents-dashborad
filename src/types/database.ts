@@ -1,6 +1,26 @@
 // TypeScript types for the AgentsLeads Supabase database
 // Relationships: [] required for Supabase JS v2 type inference
 
+// Catalog column mapping — keys recognized by the backend in catalogSearch.ts
+export type CatalogSystemKey =
+  | "name"
+  | "price"
+  | "price_sede"
+  | "price_domicilio"
+  | "available"
+  | "description"
+  | "notes";
+
+export type CatalogColMapping = Partial<Record<CatalogSystemKey, string>>;
+
+/** Describes a single field the LLM must emit inside the RESERVA_INICIO/FIN block (migration 064). */
+export interface ReservationOutputField {
+  key: string;       // JSON key emitted by the LLM (e.g. "nombre_lead")
+  label: string;     // Human-readable label for the admin UI
+  required: boolean; // Whether the LLM must always provide this field
+  hint: string;      // Instruction injected into the prompt for this field
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -236,6 +256,53 @@ export type Database = {
         };
         Relationships: [];
       };
+      client_catalog_config: {
+        Row: {
+          id: string;
+          client_id: string;
+          col_mapping: CatalogColMapping;
+          extra_fields: { column: string; label: string }[];
+          info_sheet_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          client_id: string;
+          col_mapping?: CatalogColMapping;
+          extra_fields?: { column: string; label: string }[];
+          info_sheet_url?: string | null;
+        };
+        Update: {
+          col_mapping?: CatalogColMapping;
+          extra_fields?: { column: string; label: string }[];
+          info_sheet_url?: string | null;
+        };
+        Relationships: [];
+      };
+      client_reservation_config: {
+        Row: {
+          id: string;
+          client_id: string;
+          output_fields: ReservationOutputField[];
+          block_enabled: boolean;
+          /** Free-text example of the confirmation message. Injected into <BloqueReserva> at runtime (migration 065). */
+          confirmation_example: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          client_id: string;
+          output_fields?: ReservationOutputField[];
+          block_enabled?: boolean;
+          confirmation_example?: string;
+        };
+        Update: {
+          output_fields?: ReservationOutputField[];
+          block_enabled?: boolean;
+          confirmation_example?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Enums: Record<string, never>;
@@ -265,6 +332,8 @@ export type Database = {
 export type Tables<T extends keyof Database["public"]["Tables"]> =
   Database["public"]["Tables"][T]["Row"];
 
+export type ClientCatalogConfig = Tables<"client_catalog_config">;
+
 export type Lead = Tables<"leads">;
 export type Client = Tables<"clients">;
 export type Message = Tables<"messages">;
@@ -272,3 +341,4 @@ export type ClientUser = Tables<"client_users">;
 export type AgentPrompt = Tables<"agent_prompts">;
 export type Plan = Tables<"plans">;
 export type ClientFaq = Tables<"client_faqs">;
+export type ClientReservationConfig = Tables<"client_reservation_config">;

@@ -36,6 +36,14 @@ export function ClientTabNav({ clientId, activeFaqsCount }: Props) {
       label: "Preguntas frecuentes",
       badge: activeFaqsCount,
     },
+    {
+      href: `/admin/clients/${clientId}/reservation`,
+      label: "Reserva",
+    },
+    {
+      href: `/admin/clients/${clientId}/catalog`,
+      label: "Columnas del Sheet",
+    },
   ];
 
   return (
