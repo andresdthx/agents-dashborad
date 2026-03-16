@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { getPlans } from "@/lib/queries/clients";
 import { ClientForm } from "@/components/admin/ClientForm";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Nuevo cliente | AgentsLeads",
+};
 
 export default async function NewClientPage() {
   const { plans } = await getPlans();

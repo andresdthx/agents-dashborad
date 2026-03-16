@@ -1,3 +1,15 @@
+"use client";
+
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
 interface WeeklySparklineProps {
   data: { date: string; count: number }[];
   title?: string;
@@ -6,12 +18,34 @@ interface WeeklySparklineProps {
 
 const DAY_NAMES = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"];
 
-// ViewBox dimensions (logical units)
-const VW = 280;
-const VH = 80;
-const PAD = { top: 16, bottom: 22, left: 8, right: 8 };
-const PLOT_W = VW - PAD.left - PAD.right;
-const PLOT_H = VH - PAD.top - PAD.bottom;
+interface TooltipPayload {
+  value: number;
+  payload: { date: string; count: number };
+}
+
+function CustomTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: TooltipPayload[];
+}) {
+  if (!active || !payload?.length) return null;
+  const { date, count } = payload[0].payload;
+  const [y, m, d] = date.split("-").map(Number);
+  const dayName = DAY_NAMES[new Date(y, m - 1, d).getDay()];
+
+  return (
+    <div className="rounded-lg border border-edge bg-surface-overlay px-3 py-2 shadow-md">
+      <p className="text-[11px] font-medium text-ink-2">
+        {dayName} {d}/{m}
+      </p>
+      <p className="mt-0.5 font-mono text-sm font-semibold text-ink">
+        {count} lead{count !== 1 ? "s" : ""}
+      </p>
+    </div>
+  );
+}
 
 export function WeeklySparkline({
   data,
@@ -19,136 +53,121 @@ export function WeeklySparkline({
   emptyLabel = "Sin leads esta semana",
 }: WeeklySparklineProps) {
   const total = data.reduce((s, d) => s + d.count, 0);
-  const maxVal = Math.max(...data.map((d) => d.count), 1);
   const n = data.length;
 
-  const pts = data.map((d, i) => {
-    const x = n < 2 ? PAD.left + PLOT_W / 2 : PAD.left + (i / (n - 1)) * PLOT_W;
-    const y = PAD.top + PLOT_H - (d.count / maxVal) * PLOT_H;
-    return { x, y, count: d.count, date: d.date };
+  const chartData = data.map((d, i) => {
+    const [y, m, day] = d.date.split("-").map(Number);
+    return {
+      ...d,
+      label: DAY_NAMES[new Date(y, m - 1, day).getDay()],
+      isToday: i === n - 1,
+    };
   });
 
-  const baseline = PAD.top + PLOT_H;
-  const polyLine = pts.map((p) => `${p.x},${p.y}`).join(" ");
-  const areaD = [
-    `M ${pts[0].x} ${baseline}`,
-    ...pts.map((p) => `L ${p.x} ${p.y}`),
-    `L ${pts[pts.length - 1].x} ${baseline}`,
-    "Z",
-  ].join(" ");
-
   return (
-    <div className="rounded-xl border border-edge bg-surface-raised p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xs font-semibold text-ink-2">{title}</h2>
-        <div className="flex items-center gap-3">
-          {n > 0 && total > 0 && (
-            <span className="text-[10px] text-ink-4">
-              ~{Math.round(total / n)}/día
-            </span>
-          )}
-          <span className="font-mono text-xs font-semibold tabular-nums text-ink">
-            {total} total
-          </span>
+    <div className="rounded-xl bg-surface-raised p-5 shadow-sm">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-semibold text-ink">{title}</h2>
+          <p className="mt-0.5 text-[11px] text-ink-3">
+            {total > 0 ? `${total} leads en 7 días` : "Sin actividad esta semana"}
+          </p>
         </div>
+        {/* Active badge */}
+        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-signal/20 bg-signal/10 px-2.5 py-1 text-[10px] font-semibold text-signal">
+          <span className="h-1.5 w-1.5 rounded-full bg-signal" aria-hidden="true" />
+          Activos
+        </span>
       </div>
 
+      {/* Chart or empty state */}
       {total === 0 ? (
-        <div className="mt-3 flex h-[58px] items-center justify-center rounded-lg bg-canvas">
+        <div className="mt-4 flex h-[180px] items-center justify-center rounded-lg bg-canvas">
           <p className="text-xs text-ink-4">{emptyLabel}</p>
         </div>
       ) : (
-        /* Container uses CSS aspect-ratio so the SVG scales without distortion */
-        <div className="mt-3 w-full" style={{ aspectRatio: `${VW} / ${VH}` }}>
-          <svg
-            role="img"
-            aria-label={`Tendencia semanal: ${total} leads en los últimos 7 días`}
-            viewBox={`0 0 ${VW} ${VH}`}
-            width="100%"
-            height="100%"
-          >
-            <title>Tendencia de leads en los últimos 7 días</title>
-
-            {/* Grid lines — subtle horizontal rules at 25%, 50%, 75% */}
-            {[0.25, 0.5, 0.75].map((f) => {
-              const gy = PAD.top + PLOT_H * (1 - f);
-              return (
-                <line
-                  key={f}
-                  x1={PAD.left}
-                  y1={gy}
-                  x2={PAD.left + PLOT_W}
-                  y2={gy}
-                  stroke="var(--color-edge-subtle)"
-                  strokeWidth="0.5"
-                />
-              );
-            })}
-
-            {/* Area fill */}
-            <path d={areaD} fill="var(--color-signal)" fillOpacity="0.07" />
-
-            {/* Line */}
-            <polyline
-              points={polyLine}
-              fill="none"
-              stroke="var(--color-signal)"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-
-            {/* Dots + labels per day */}
-            {pts.map((p, i) => {
-              const [y, m, d] = p.date.split("-").map(Number);
-              const dayName = DAY_NAMES[new Date(y, m - 1, d).getDay()];
-              const isToday = i === n - 1;
-
-              return (
-                <g key={i} style={{ cursor: "default" }}>
-                  <title>{`${dayName} ${d}/${m}: ${p.count} lead${p.count !== 1 ? "s" : ""}`}</title>
-                  {/* Count above dot (only when > 0) */}
-                  {p.count > 0 && (
-                    <text
-                      x={p.x}
-                      y={p.y - 5}
-                      textAnchor="middle"
-                      fontSize="7"
-                      fontWeight="600"
-                      fill="var(--color-ink-2)"
-                    >
-                      {p.count}
-                    </text>
-                  )}
-
-                  {/* Dot — today is highlighted */}
-                  <circle
-                    cx={p.x}
-                    cy={p.y}
-                    r={isToday ? 3 : 2}
-                    fill={isToday ? "var(--color-signal)" : "var(--color-signal)"}
-                    stroke="var(--color-surface-raised)"
-                    strokeWidth="1.5"
-                    opacity={isToday ? 1 : 0.7}
+        <div className="mt-4 h-[180px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={chartData}
+              margin={{ top: 8, right: 4, left: -32, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-signal)"
+                    stopOpacity={0.18}
                   />
-                  {/* Invisible hit area for tooltip */}
-                  <circle cx={p.x} cy={p.y} r="8" fill="transparent" />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-signal)"
+                    stopOpacity={0}
+                  />
+                </linearGradient>
+              </defs>
 
-                  {/* Day label */}
-                  <text
-                    x={p.x}
-                    y={VH - 6}
-                    textAnchor="middle"
-                    fontSize="7"
-                    fontWeight={isToday ? "600" : "400"}
-                    fill={isToday ? "var(--color-ink-2)" : "var(--color-ink-4)"}
-                  >
-                    {dayName}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--color-edge-subtle)"
+                vertical={false}
+              />
+
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 9, fill: "var(--color-ink-4)" }}
+                tickLine={false}
+                axisLine={false}
+              />
+
+              <YAxis
+                allowDecimals={false}
+                tick={{ fontSize: 9, fill: "var(--color-ink-4)" }}
+                tickLine={false}
+                axisLine={false}
+              />
+
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{
+                  stroke: "var(--color-signal)",
+                  strokeWidth: 1,
+                  strokeDasharray: "4 2",
+                }}
+              />
+
+              <Area
+                type="monotone"
+                dataKey="count"
+                stroke="var(--color-signal)"
+                strokeWidth={2}
+                fill="url(#areaGradient)"
+                dot={(props) => {
+                  const { cx, cy, index } = props;
+                  const isToday = index === n - 1;
+                  return (
+                    <circle
+                      key={index}
+                      cx={cx}
+                      cy={cy}
+                      r={isToday ? 4 : 3}
+                      fill="var(--color-signal)"
+                      stroke="var(--color-surface-raised)"
+                      strokeWidth={1.5}
+                      opacity={isToday ? 1 : 0.75}
+                    />
+                  );
+                }}
+                activeDot={{
+                  r: 4,
+                  fill: "var(--color-signal)",
+                  stroke: "var(--color-surface-raised)",
+                  strokeWidth: 2,
+                }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       )}
     </div>

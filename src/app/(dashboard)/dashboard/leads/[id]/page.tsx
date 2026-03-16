@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLeadById } from "@/lib/queries/leads";
 import { getMessagesByLeadId } from "@/lib/queries/messages";
@@ -8,6 +9,17 @@ import { formatDateTime } from "@/lib/utils";
 import Link from "next/link";
 import { ChevronLeft, ClipboardList, CheckCircle2 } from "lucide-react";
 import { HandoffBadge } from "@/components/leads/HandoffBadge";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const { lead } = await getLeadById(id);
+  if (!lead) return { title: "Lead | AgentsLeads" };
+  return { title: `Lead ${lead.phone} | AgentsLeads` };
+}
 
 export default async function LeadDetailPage({
   params,

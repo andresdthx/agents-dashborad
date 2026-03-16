@@ -264,10 +264,10 @@ export function ReservationBlockManager({
   const activeCount = fields.filter((f) => f.enabled).length;
 
   return (
-    <div className="max-w-2xl space-y-5">
+    <div className="w-full space-y-5">
 
       {/* ── Block enable toggle ─────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between rounded-xl border border-edge bg-surface-raised px-4 py-3">
+      <div className="flex items-center justify-between rounded-xl border border-edge bg-surface-raised shadow-sm px-4 py-3">
         <div>
           <p className="text-sm font-medium text-ink">Bloque de reserva</p>
           <p className="mt-0.5 text-xs text-ink-4">
@@ -331,7 +331,7 @@ export function ReservationBlockManager({
               <div
                 key={field.key}
                 className={cn(
-                  "rounded-xl border border-edge bg-surface-raised transition-opacity",
+                  "rounded-xl border border-edge bg-surface-raised shadow-sm transition-opacity",
                   !field.enabled && "opacity-55"
                 )}
               >
@@ -441,32 +441,30 @@ export function ReservationBlockManager({
                           <Button size="sm" variant="outline" onClick={() => startEdit(field)}>
                             Editar
                           </Button>
-                          {!field.isDefault && (
-                            isConfirmingDelete ? (
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-ink-3">¿Eliminar definitivamente?</span>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleDelete(field.key)}
-                                >
-                                  Sí, eliminar
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={() => setConfirmDeleteKey(null)}>
-                                  Cancelar
-                                </Button>
-                              </div>
-                            ) : (
+                          {isConfirmingDelete ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-ink-3">¿Eliminar definitivamente?</span>
                               <Button
                                 size="sm"
-                                variant="ghost"
-                                onClick={() => setConfirmDeleteKey(field.key)}
-                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                variant="destructive"
+                                onClick={() => handleDelete(field.key)}
                               >
-                                <Trash2 className="h-4 w-4" />
-                                Eliminar
+                                Sí, eliminar
                               </Button>
-                            )
+                              <Button size="sm" variant="ghost" onClick={() => setConfirmDeleteKey(null)}>
+                                Cancelar
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setConfirmDeleteKey(field.key)}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Eliminar
+                            </Button>
                           )}
                         </div>
                       </div>
@@ -491,7 +489,7 @@ export function ReservationBlockManager({
 
         {/* Formulario nuevo campo */}
         {showNewForm && (
-          <div className="rounded-xl border border-edge bg-surface-raised p-4 space-y-3">
+          <div className="rounded-xl border border-edge bg-surface-raised shadow-sm p-4 space-y-3">
             <p className="text-sm font-semibold text-ink">Nuevo campo</p>
             <div className="space-y-1.5">
               <Label htmlFor="new-field-label">Nombre del dato</Label>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Play, PauseCircle } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -47,22 +47,21 @@ export function BotToggleButton({ leadId, botPaused }: Props) {
       onClick={toggle}
       disabled={loading}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50",
         botPaused
-          ? "border-bot-active/30 bg-bot-active-surface text-bot-active-text hover:bg-bot-active/20"
-          : "border-edge bg-surface-raised text-ink-2 hover:bg-surface hover:text-ink"
+          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400"
+          : "border-edge bg-surface-raised text-ink-3 hover:bg-canvas hover:text-ink-2"
       )}
     >
       {botPaused ? (
-        <>
-          <Play className="h-3 w-3" />
-          {loading ? "Activando..." : "Reactivar"}
-        </>
+        <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
       ) : (
-        <>
-          <PauseCircle className="h-3 w-3" />
-          {loading ? "Pausando..." : "Pausar"}
-        </>
+        <Pause className="h-3 w-3" />
+      )}
+      {botPaused ? (
+        loading ? "Activando..." : "Reactivar"
+      ) : (
+        loading ? "Pausando..." : "Pausar"
       )}
     </button>
   );

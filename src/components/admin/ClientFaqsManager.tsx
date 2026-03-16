@@ -142,7 +142,7 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
   const activeCount = faqs.filter((f) => f.is_active).length;
 
   return (
-    <div className="max-w-2xl space-y-4">
+    <div className="w-full space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -179,7 +179,7 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
             <div
               key={faq.id}
               className={cn(
-                "rounded-xl border border-edge bg-surface-raised transition-opacity",
+                "rounded-xl border border-edge bg-surface-raised shadow-sm transition-opacity",
                 !faq.is_active && "opacity-55"
               )}
             >
@@ -333,7 +333,7 @@ export function ClientFaqsManager({ clientId, initialFaqs }: Props) {
 
       {/* Formulario nueva FAQ */}
       {showNewForm && (
-        <div className="rounded-xl border border-edge bg-surface-raised p-4 space-y-3">
+        <div className="rounded-xl border border-edge bg-surface-raised shadow-sm p-4 space-y-3">
           <p className="text-sm font-semibold text-ink">Nueva pregunta frecuente</p>
           <div className="space-y-1.5">
             <Label htmlFor="new-question">Pregunta</Label>

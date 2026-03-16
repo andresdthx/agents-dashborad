@@ -45,7 +45,7 @@ export default async function ClientAgentPage({
 
       <ClientTabNav clientId={id} activeFaqsCount={activeFaqsCount} />
 
-      <div className="space-y-2 max-w-2xl">
+      <div className="space-y-2 w-full">
         <div>
           <h2 className="text-sm font-semibold text-ink">Prompt del agente</h2>
           <p className="mt-0.5 text-sm text-ink-3">

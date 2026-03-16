@@ -22,7 +22,7 @@ function StatTile({
   colorClass?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-edge bg-surface-raised p-5 shadow-sm">
+    <div className="rounded-2xl bg-surface-raised p-5 shadow-sm">
       <p className="text-[11px] font-medium uppercase tracking-wider text-ink-3">{label}</p>
       <p
         className={`mt-2 font-mono text-4xl font-bold tabular-nums ${colorClass ?? "text-ink"}`}
@@ -169,7 +169,7 @@ export function AdminDashboard({
 
       {/* Distribución global Hot/Warm/Cold */}
       {(globalHot + globalWarm + globalCold) > 0 && (
-        <div className="rounded-2xl border border-edge bg-surface-raised p-5 shadow-sm">
+        <div className="rounded-2xl bg-surface-raised p-5 shadow-sm">
           <div className="mb-4 flex items-center gap-2">
             <Activity className="h-4 w-4 text-ink-3" />
             <p className="text-sm font-semibold text-ink">Distribución global de clasificación</p>
@@ -207,7 +207,7 @@ export function AdminDashboard({
 
       {/* Top 10 clientes por leads */}
       {clientsSummary.length > 0 && (
-        <div className="rounded-2xl border border-edge bg-surface-raised shadow-sm">
+        <div className="rounded-2xl bg-surface-raised shadow-sm">
           <div className="flex items-center gap-2 border-b border-edge px-5 py-4">
             <TrendingUp className="h-4 w-4 text-ink-3" />
             <p className="text-sm font-semibold text-ink">Ranking de clientes por leads</p>

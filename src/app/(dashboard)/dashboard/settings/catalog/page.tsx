@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getCatalogConfig } from "@/lib/actions/catalogConfig";
 import { CatalogColMappingManager } from "@/components/admin/CatalogColMappingManager";
 import { TableProperties } from "lucide-react";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Configuración · Catálogo | AgentsLeads",
+};
 
 export default async function CatalogSettingsPage() {
   const supabase = await createClient();
@@ -28,7 +33,7 @@ export default async function CatalogSettingsPage() {
 
   if (!clientId) {
     return (
-      <div className="rounded-xl border border-dashed border-edge bg-canvas py-16 text-center max-w-2xl">
+      <div className="rounded-xl border border-dashed border-edge bg-canvas py-16 text-center w-full">
         <TableProperties className="mx-auto h-8 w-8 text-ink-4" aria-hidden="true" />
         <p className="mt-3 text-sm font-medium text-ink-3">Sin cliente asignado</p>
         <p className="mt-1 text-xs text-ink-4">
