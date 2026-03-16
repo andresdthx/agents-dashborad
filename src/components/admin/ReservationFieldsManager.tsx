@@ -190,9 +190,9 @@ export function ReservationFieldsManager({ clientId, initialConfig }: Props) {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="max-w-2xl space-y-5">
+    <div className="w-full space-y-5">
       {/* Global toggle */}
-      <div className="flex items-center justify-between rounded-xl border border-edge bg-surface-raised px-4 py-3">
+      <div className="flex items-center justify-between rounded-xl border border-edge bg-surface-raised shadow-sm px-4 py-3">
         <div>
           <p className="text-sm font-medium text-ink">Bloque de reserva</p>
           <p className="mt-0.5 text-xs text-ink-4">
@@ -240,7 +240,7 @@ export function ReservationFieldsManager({ clientId, initialConfig }: Props) {
             return (
               <div
                 key={field.key}
-                className="rounded-xl border border-edge bg-surface-raised"
+                className="rounded-xl border border-edge bg-surface-raised shadow-sm"
               >
                 {isEditing ? (
                   <div className="p-4 space-y-3">
@@ -377,7 +377,7 @@ export function ReservationFieldsManager({ clientId, initialConfig }: Props) {
 
         {/* New field form */}
         {showNewForm && (
-          <div className="rounded-xl border border-edge bg-surface-raised p-4 space-y-3">
+          <div className="rounded-xl border border-edge bg-surface-raised shadow-sm p-4 space-y-3">
             <p className="text-sm font-semibold text-ink">Nuevo campo personalizado</p>
             <div className="space-y-1.5">
               <Label htmlFor="new-field-key">Clave JSON</Label>

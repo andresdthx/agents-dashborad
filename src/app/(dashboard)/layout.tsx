@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { ClientUser } from "@/types/database";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { TopBar } from "@/components/layout/TopBar";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 
 export default async function DashboardLayout({
   children,
@@ -27,12 +26,12 @@ export default async function DashboardLayout({
   const clientUser = rawClientUser as Pick<ClientUser, "role" | "client_id">;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-canvas">
-      <Sidebar role={clientUser.role} userEmail={user.email ?? undefined} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <TopBar userEmail={user.email ?? ""} clientId={clientUser.client_id} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
+    <DashboardShell
+      role={clientUser.role}
+      userEmail={user.email ?? ""}
+      clientId={clientUser.client_id}
+    >
+      {children}
+    </DashboardShell>
   );
 }

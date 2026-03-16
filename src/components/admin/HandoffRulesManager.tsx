@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Check, Plus, Trash2, Users, X, ArrowLeftRight } from "lucide-react";
+import { AlertTriangle, ArrowLeftRight, Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import { getBrowserClient } from "@/lib/supabase/browser";
 import { createHandoff, updateHandoff, deleteHandoff, type ClientHandoff } from "@/lib/queries/handoffs";
 import { Button } from "@/components/ui/button";
@@ -112,13 +112,20 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
   }, [newHandoff, handoffs, supabase, clientId]);
 
   return (
-    <div className="max-w-2xl space-y-4">
+    <div className="w-full space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-ink-3">
-          {handoffs.length === 0
-            ? "Sin reglas configuradas"
-            : `${handoffs.length} regla${handoffs.length !== 1 ? "s" : ""} configurada${handoffs.length !== 1 ? "s" : ""}`}
+          {handoffs.length === 0 ? (
+            "Sin reglas configuradas"
+          ) : (
+            <>
+              <span className="font-semibold text-ink">
+                {handoffs.length} regla{handoffs.length !== 1 ? "s" : ""}
+              </span>{" "}
+              configurada{handoffs.length !== 1 ? "s" : ""}
+            </>
+          )}
         </p>
         {!showNewForm && (
           <Button size="sm" onClick={() => setShowNewForm(true)}>
@@ -135,7 +142,7 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
           const isConfirmingDelete = confirmDeleteId === h.id;
 
           return (
-            <div key={h.id} className="rounded-xl border border-edge bg-surface-raised">
+            <div key={h.id} className="rounded-xl border border-edge bg-surface-raised shadow-sm">
               {isEditing ? (
                 <div className="p-4 space-y-3">
                   <div className="space-y-1.5">
@@ -181,37 +188,37 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
                 </div>
               ) : (
                 <div className="flex items-start gap-3 px-4 py-3">
-                  {/* Urgency indicator */}
+                  {/* Icon */}
                   <div className={cn(
                     "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
-                    h.urgent ? "bg-destructive/10" : "bg-surface-raised border border-edge"
+                    h.urgent ? "bg-destructive/10" : "bg-signal/10"
                   )}>
                     {h.urgent
                       ? <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
-                      : <Users className="h-3.5 w-3.5 text-ink-4" />
+                      : <ArrowLeftRight className="h-3.5 w-3.5 text-signal" />
                     }
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-ink leading-snug">{h.trigger}</p>
-                    <div className="mt-1 flex items-center gap-2">
+                    <div className="mt-1.5 flex items-center gap-2">
                       <span className={cn(
-                        "text-[11px] font-medium",
-                        h.urgent ? "text-destructive" : "text-ink-4"
+                        "inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-medium",
+                        h.urgent
+                          ? "border-destructive/30 bg-destructive/10 text-destructive"
+                          : "border-signal/30 bg-signal/10 text-signal"
                       )}>
                         {h.urgent ? "Urgente" : "Normal"}
                       </span>
                       {h.response && (
-                        <>
-                          <span className="text-ink-4">·</span>
-                          <span className="text-[11px] text-ink-3 italic truncate">"{h.response}"</span>
-                        </>
+                        <span className="text-[11px] text-ink-3 italic truncate">"{h.response}"</span>
                       )}
                     </div>
                   </div>
 
                   <div className="flex shrink-0 items-center gap-1">
                     <Button size="sm" variant="outline" onClick={() => startEdit(h)}>
+                      <Pencil className="h-3.5 w-3.5" />
                       Editar
                     </Button>
                     {isConfirmingDelete ? (
@@ -231,11 +238,11 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
                     ) : (
                       <Button
                         size="sm"
-                        variant="ghost"
+                        variant="outline"
                         onClick={() => setConfirmDeleteId(h.id)}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:border-destructive/60"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     )}
                   </div>
@@ -259,7 +266,7 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
 
       {/* Formulario nueva regla */}
       {showNewForm && (
-        <div className="rounded-xl border border-edge bg-surface-raised p-4 space-y-3">
+        <div className="rounded-xl border border-edge bg-surface-raised shadow-sm p-4 space-y-3">
           <p className="text-sm font-semibold text-ink">Nueva regla de transferencia</p>
           <div className="space-y-1.5">
             <Label htmlFor="new-trigger">Disparador</Label>
@@ -316,15 +323,6 @@ export function HandoffRulesManager({ clientId, initialHandoffs }: Props) {
 
 // ── Sub-componentes ────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function UrgencyIcon({ urgent }: { urgent: boolean }) {
-  return urgent ? (
-    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-  ) : (
-    <Users className="mt-0.5 h-4 w-4 shrink-0 text-ink-4" />
-  );
-}
-
 function UrgencyToggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className="space-y-1.5">
@@ -340,7 +338,7 @@ function UrgencyToggle({ value, onChange }: { value: boolean; onChange: (v: bool
               : "border-edge bg-canvas text-ink-3 hover:border-edge-strong"
           )}
         >
-          <Users className="h-4 w-4" />
+          <ArrowLeftRight className="h-4 w-4" />
           Normal
         </button>
         <button

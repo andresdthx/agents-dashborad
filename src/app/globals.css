@@ -50,6 +50,11 @@
 
   /* AgentsLeads — domain tokens */
 
+  /* Banner gradient stops (always dark-themed, invariant across themes) */
+  --color-banner-1: var(--banner-1);
+  --color-banner-2: var(--banner-2);
+  --color-banner-3: var(--banner-3);
+
   /* Surface elevation */
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
@@ -98,6 +103,11 @@
 /* Light mode */
 :root {
   --radius: 0.5rem;
+
+  /* Banner gradient stops (static — banner is always dark-themed) */
+  --banner-1: oklch(0.22 0.22 278);
+  --banner-2: oklch(0.18 0.18 252);
+  --banner-3: oklch(0.20 0.20 268);
 
   --canvas: oklch(0.97 0.005 260);
   --surface: oklch(1 0 0);
@@ -178,10 +188,10 @@
   --surface-raised: oklch(0.20 0.018 265);
   --surface-overlay: oklch(0.25 0.018 265);
 
-  --ink: oklch(0.95 0.005 260);
-  --ink-2: oklch(0.68 0.010 260);
-  --ink-3: oklch(0.46 0.008 260);
-  --ink-4: oklch(0.30 0.006 260);
+  --ink: oklch(0.97 0.005 260);
+  --ink-2: oklch(0.78 0.010 260);
+  --ink-3: oklch(0.60 0.008 260);
+  --ink-4: oklch(0.45 0.006 260);
 
   --edge: oklch(1 0 0 / 8%);
   --edge-subtle: oklch(1 0 0 / 5%);
@@ -250,6 +260,6 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
 }

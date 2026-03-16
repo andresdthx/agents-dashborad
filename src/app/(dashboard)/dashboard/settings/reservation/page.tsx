@@ -34,7 +34,7 @@ export default async function ReservationSettingsPage() {
 
   if (!clientId) {
     return (
-      <div className="rounded-xl border border-dashed border-edge bg-canvas py-16 text-center max-w-2xl">
+      <div className="rounded-xl border border-dashed border-edge bg-canvas py-16 text-center w-full">
         <CalendarCheck className="mx-auto h-8 w-8 text-ink-4" aria-hidden="true" />
         <p className="mt-3 text-sm font-medium text-ink-3">Sin cliente asignado</p>
         <p className="mt-1 text-xs text-ink-4">

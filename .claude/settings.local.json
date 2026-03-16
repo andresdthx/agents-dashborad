@@ -22,7 +22,12 @@
       "Bash(grep -r \"recharts\\\\|visx\\\\|nivo\\\\|chart.js\" /c/Users/andres.canchila_prag/Documents/personal_devs/web/src --include=\"*.tsx\" --include=\"*.ts\" -l 2>/dev/null | head -20)",
       "Bash(find /c/Users/andres.canchila_prag/Documents/personal_devs/web/src/components -type f -name \"*.tsx\" | xargs grep -l \"SVG\\\\|svg\\\\|chart\\\\|Chart\" | head -10)",
       "Bash(ls:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "mcp__figma__whoami",
+      "Bash(npx tsc:*)",
+      "Bash(npx next:*)",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force; Write-Host 'killed'\")",
+      "Bash(rm:*)"
     ]
   }
 }

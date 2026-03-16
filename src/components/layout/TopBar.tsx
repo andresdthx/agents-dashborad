@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Moon, Sun } from "lucide-react";
+import { LogOut, Moon, Sun, Menu } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
@@ -22,6 +22,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 interface TopBarProps {
   userEmail: string;
   clientId: string | null;
+  onMenuOpen?: () => void;
 }
 
 const PAGE_LABELS: Record<string, string> = {
@@ -62,7 +63,7 @@ function ThemeToggle() {
   );
 }
 
-export function TopBar({ userEmail, clientId }: TopBarProps) {
+export function TopBar({ userEmail, clientId, onMenuOpen }: TopBarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const pageLabel = getPageLabel(pathname);
@@ -106,15 +107,24 @@ export function TopBar({ userEmail, clientId }: TopBarProps) {
   const initials = localPart.slice(0, 2).toUpperCase();
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-edge bg-canvas px-5">
+    <header className="flex h-14 items-center justify-between border-b border-edge bg-canvas px-5 shadow-[0_1px_0_0_var(--color-edge-subtle)]">
       <div className="flex items-center gap-3">
-        <Link href="/dashboard">
-          <span className="text-lg font-medium text-ink-2">{pageLabel}</span>
+        {onMenuOpen && (
+          <button
+            onClick={onMenuOpen}
+            className="mr-1 flex h-8 w-8 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-surface-raised hover:text-ink-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-signal md:hidden"
+            aria-label="Abrir menú"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        )}
+        <Link href="/dashboard" className="flex items-center">
+          <span className="text-base font-semibold text-ink">{pageLabel}</span>
         </Link>
         {dateStr && (
           <>
             <span className="hidden text-ink-4 sm:block">·</span>
-            <span className="hidden text-sm text-ink-4 sm:block">{dateStr}</span>
+            <span className="hidden text-sm text-ink-3 sm:block">{dateStr}</span>
           </>
         )}
       </div>
