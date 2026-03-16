@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { GlobalStats, ClientSummary } from "@/lib/queries/clients";
-import { Users, TrendingUp, PauseCircle, Activity } from "lucide-react";
+import { Users, TrendingUp, PauseCircle, Activity, AlertTriangle } from "lucide-react";
 import { WeeklySparkline } from "@/components/dashboard/WeeklySparkline";
 
 interface AdminDashboardProps {
@@ -74,6 +74,28 @@ function DistributionBar({
   );
 }
 
+function ConversionRateCell({ rate }: { rate: number | null }) {
+  if (rate === null) return <span className="text-ink-4">—</span>;
+  const colorClass =
+    rate >= 50 ? "text-lead-hot-text" : rate >= 20 ? "text-lead-warm-text" : "text-lead-cold-text";
+  return (
+    <span className={`font-mono tabular-nums ${colorClass}`}>
+      {rate}%
+    </span>
+  );
+}
+
+function AvgScoreCell({ score }: { score: number | null }) {
+  if (score === null) return <span className="text-ink-4">—</span>;
+  const colorClass =
+    score >= 70 ? "text-lead-hot-text" : score >= 40 ? "text-lead-warm-text" : "text-lead-cold-text";
+  return (
+    <span className={`font-mono tabular-nums ${colorClass}`}>
+      {score}
+    </span>
+  );
+}
+
 export function AdminDashboard({
   globalStats,
   clientsSummary,
@@ -89,7 +111,12 @@ export function AdminDashboard({
     globalHot,
     globalWarm,
     globalCold,
+    handoffBreakdown,
+    mrr,
   } = globalStats;
+
+  const totalHandoffs =
+    handoffBreakdown.urgent + handoffBreakdown.requested + handoffBreakdown.technical + handoffBreakdown.observer;
 
   return (
     <div className="space-y-6">
@@ -153,10 +180,10 @@ export function AdminDashboard({
             sub="en todo el sistema"
           />
           <StatTile
-            label="Clientes Hot"
-            value={globalHot}
-            sub="alto interés"
-            colorClass="text-lead-hot-text"
+            label="MRR estimado"
+            value={`$${mrr.toLocaleString("en-US")}`}
+            sub="clientes activos"
+            colorClass="text-signal"
           />
           <StatTile
             label="Bots con pausa"
@@ -166,6 +193,61 @@ export function AdminDashboard({
           />
         </div>
       </div>
+
+      {/* Desglose de handoffs activos */}
+      {totalHandoffs > 0 && (
+        <div className="rounded-2xl bg-surface-raised p-5 shadow-sm">
+          <div className="mb-4 flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-ink-3" />
+            <p className="text-sm font-semibold text-ink">Handoffs activos por urgencia</p>
+            <span className="ml-auto font-mono text-xs tabular-nums text-ink-3">
+              {totalHandoffs} total
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {handoffBreakdown.urgent > 0 && (
+              <div className="rounded-xl bg-lead-hot-surface px-3 py-2.5">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-lead-hot-text opacity-70">
+                  Urgente
+                </p>
+                <p className="mt-1 font-mono text-2xl font-bold tabular-nums text-lead-hot-text">
+                  {handoffBreakdown.urgent}
+                </p>
+              </div>
+            )}
+            {handoffBreakdown.requested > 0 && (
+              <div className="rounded-xl bg-lead-warm-surface px-3 py-2.5">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-lead-warm-text opacity-70">
+                  Solicitado
+                </p>
+                <p className="mt-1 font-mono text-2xl font-bold tabular-nums text-lead-warm-text">
+                  {handoffBreakdown.requested}
+                </p>
+              </div>
+            )}
+            {handoffBreakdown.technical > 0 && (
+              <div className="rounded-xl bg-surface-overlay px-3 py-2.5">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-ink-3 opacity-70">
+                  Técnico
+                </p>
+                <p className="mt-1 font-mono text-2xl font-bold tabular-nums text-ink-2">
+                  {handoffBreakdown.technical}
+                </p>
+              </div>
+            )}
+            {handoffBreakdown.observer > 0 && (
+              <div className="rounded-xl bg-surface-overlay px-3 py-2.5">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-ink-4 opacity-70">
+                  Observador
+                </p>
+                <p className="mt-1 font-mono text-2xl font-bold tabular-nums text-ink-3">
+                  {handoffBreakdown.observer}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Distribución global Hot/Warm/Cold */}
       {(globalHot + globalWarm + globalCold) > 0 && (
@@ -207,62 +289,98 @@ export function AdminDashboard({
 
       {/* Top 10 clientes por leads */}
       {clientsSummary.length > 0 && (
-        <div className="rounded-2xl bg-surface-raised shadow-sm">
+        <div className="rounded-2xl bg-surface-raised shadow-sm overflow-hidden">
           <div className="flex items-center gap-2 border-b border-edge px-5 py-4">
             <TrendingUp className="h-4 w-4 text-ink-3" />
             <p className="text-sm font-semibold text-ink">Ranking de clientes por leads</p>
           </div>
-          <ul className="divide-y divide-edge">
-            {clientsSummary.map((client, idx) => {
-              const clientTotal = client.total_leads;
-              const hotPct = clientTotal > 0 ? Math.round((client.hot / clientTotal) * 100) : 0;
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-edge">
+                  <th className="w-8 px-5 py-2.5 text-left font-medium text-[10px] uppercase tracking-wider text-ink-4">
+                    #
+                  </th>
+                  <th className="px-2 py-2.5 text-left font-medium text-[10px] uppercase tracking-wider text-ink-4">
+                    Cliente
+                  </th>
+                  <th className="px-2 py-2.5 text-right font-medium text-[10px] uppercase tracking-wider text-ink-4">
+                    Leads
+                  </th>
+                  <th className="hidden px-2 py-2.5 text-right font-medium text-[10px] uppercase tracking-wider text-ink-4 sm:table-cell">
+                    Conversión
+                  </th>
+                  <th className="hidden px-2 py-2.5 text-right font-medium text-[10px] uppercase tracking-wider text-ink-4 sm:table-cell">
+                    Puntaje IA
+                  </th>
+                  <th className="hidden px-2 py-2.5 text-right font-medium text-[10px] uppercase tracking-wider text-ink-4 pr-5 md:table-cell">
+                    Bajas
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-edge">
+                {clientsSummary.map((client, idx) => {
+                  const clientTotal = client.total_leads;
+                  const hotPct = clientTotal > 0 ? Math.round((client.hot / clientTotal) * 100) : 0;
 
-              return (
-                <li key={client.id} className="flex items-center gap-4 px-5 py-3">
-                  <span className="w-5 shrink-0 text-right font-mono text-xs tabular-nums text-ink-4">
-                    {idx + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium text-ink">{client.name}</span>
-                      {!client.active && (
-                        <span className="shrink-0 rounded-sm border border-edge px-1 py-0 text-[10px] text-ink-4">
-                          inactivo
-                        </span>
-                      )}
-                      {client.paused > 0 && (
-                        <span className="shrink-0 flex items-center gap-1 rounded-sm bg-bot-paused-surface px-1.5 text-[10px] font-medium text-bot-paused-text">
-                          <PauseCircle className="h-2.5 w-2.5" />
-                          {client.paused} pausado{client.paused !== 1 ? "s" : ""}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-1.5 flex h-1 overflow-hidden rounded-full bg-edge">
-                      <div
-                        style={{ width: `${hotPct}%` }}
-                        className="bg-lead-hot transition-all"
-                      />
-                      <div
-                        style={{
-                          width: `${clientTotal > 0 ? Math.round((client.warm / clientTotal) * 100) : 0}%`,
-                        }}
-                        className="bg-lead-warm transition-all"
-                      />
-                      <div
-                        style={{
-                          width: `${clientTotal > 0 ? Math.round((client.cold / clientTotal) * 100) : 0}%`,
-                        }}
-                        className="bg-lead-cold transition-all"
-                      />
-                    </div>
-                  </div>
-                  <span className="shrink-0 font-mono text-sm font-semibold tabular-nums text-ink">
-                    {clientTotal}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+                  return (
+                    <tr key={client.id} className="group hover:bg-canvas/40 transition-colors">
+                      <td className="px-5 py-3 font-mono text-xs tabular-nums text-ink-4 text-right">
+                        {idx + 1}
+                      </td>
+                      <td className="min-w-0 px-2 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate font-medium text-ink max-w-[140px] sm:max-w-[200px]">
+                            {client.name}
+                          </span>
+                          {!client.active && (
+                            <span className="shrink-0 rounded-sm border border-edge px-1 py-0 text-[10px] text-ink-4">
+                              inactivo
+                            </span>
+                          )}
+                          {client.paused > 0 && (
+                            <span className="shrink-0 flex items-center gap-1 rounded-sm bg-bot-paused-surface px-1.5 text-[10px] font-medium text-bot-paused-text">
+                              <PauseCircle className="h-2.5 w-2.5" />
+                              {client.paused}
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-1.5 flex h-1 overflow-hidden rounded-full bg-edge max-w-[200px]">
+                          <div style={{ width: `${hotPct}%` }} className="bg-lead-hot transition-all" />
+                          <div
+                            style={{ width: `${clientTotal > 0 ? Math.round((client.warm / clientTotal) * 100) : 0}%` }}
+                            className="bg-lead-warm transition-all"
+                          />
+                          <div
+                            style={{ width: `${clientTotal > 0 ? Math.round((client.cold / clientTotal) * 100) : 0}%` }}
+                            className="bg-lead-cold transition-all"
+                          />
+                        </div>
+                      </td>
+                      <td className="px-2 py-3 text-right font-mono text-sm font-semibold tabular-nums text-ink">
+                        {clientTotal}
+                      </td>
+                      <td className="hidden px-2 py-3 text-right sm:table-cell">
+                        <ConversionRateCell rate={client.conversion_rate} />
+                      </td>
+                      <td className="hidden px-2 py-3 text-right sm:table-cell">
+                        <AvgScoreCell score={client.avg_score} />
+                      </td>
+                      <td className="hidden px-2 py-3 text-right pr-5 md:table-cell">
+                        {client.lost_count > 0 ? (
+                          <span className="font-mono tabular-nums text-lead-cold-text">
+                            {client.lost_count}
+                          </span>
+                        ) : (
+                          <span className="text-ink-4">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

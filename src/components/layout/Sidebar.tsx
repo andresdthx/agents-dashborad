@@ -24,9 +24,9 @@ interface SidebarProps {
   userEmail?: string;
 }
 
-const clientLinks = [
+const clientLinks = (role: "super_admin" | "client_agent") => [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/leads", label: "Clientes", icon: Users },
+  { href: "/dashboard/leads", label: role === "super_admin" ? "Leads" : "Clientes", icon: Users },
 ];
 
 const adminLinks = [{ href: "/admin/clients", label: "Clientes", icon: Building2 }];
@@ -111,7 +111,7 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
       </div>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-2 pt-3">
-        {clientLinks.map(({ href, label, icon, exact }) => (
+        {clientLinks(role).map(({ href, label, icon, exact }) => (
           <NavLink
             key={href}
             href={href}
