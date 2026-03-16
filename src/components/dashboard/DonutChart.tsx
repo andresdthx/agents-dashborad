@@ -6,9 +6,9 @@ interface DonutChartProps {
   cold: number;
 }
 
-const R = 36;
-const C = 2 * Math.PI * R; // ≈ 226.19
-const GAP = 4; // gap between segments (circumference units)
+const R = 38;
+const C = 2 * Math.PI * R; // ≈ 238.76
+const GAP = 4;
 
 const LEGEND = [
   {
@@ -16,121 +16,49 @@ const LEGEND = [
     label: "Hot",
     href: "/dashboard/leads?classification=hot",
     color: "var(--color-lead-hot)",
-    text: "var(--color-lead-hot-text)",
   },
   {
     key: "warm" as const,
     label: "Warm",
     href: "/dashboard/leads?classification=warm",
     color: "var(--color-lead-warm)",
-    text: "var(--color-lead-warm-text)",
   },
   {
     key: "cold" as const,
     label: "Cold",
     href: "/dashboard/leads?classification=cold",
     color: "var(--color-lead-cold)",
-    text: "var(--color-lead-cold-text)",
   },
 ];
 
 export function DonutChart({ hot, warm, cold }: DonutChartProps) {
   const total = hot + warm + cold;
+  const counts = { hot, warm, cold };
 
+  // Empty state — ring with no segments
   if (total === 0) {
     return (
       <div
         role="img"
         aria-label="Sin leads clasificados aún"
-        className="flex flex-col items-center justify-center gap-3 rounded-xl border border-edge bg-surface-raised p-6 text-center shadow-sm"
+        className="flex flex-col items-center justify-center gap-4 rounded-xl bg-surface-raised p-6 shadow-sm"
       >
-        <svg viewBox="0 0 100 100" width="72" height="72" aria-hidden="true">
+        {/* Empty donut */}
+        <svg viewBox="0 0 100 100" width="120" height="120" aria-hidden="true">
           <circle
             cx="50"
             cy="50"
             r={R}
             fill="none"
             stroke="var(--color-edge)"
-            strokeWidth="10"
+            strokeWidth="11"
           />
-        </svg>
-        <p className="text-xs text-ink-3">Sin leads clasificados</p>
-      </div>
-    );
-  }
-
-  const counts = { hot, warm, cold };
-  const fracs = { hot: hot / total, warm: warm / total, cold: cold / total };
-  const lens = {
-    hot: Math.max(0, fracs.hot * C - GAP),
-    warm: Math.max(0, fracs.warm * C - GAP),
-    cold: Math.max(0, fracs.cold * C - GAP),
-  };
-
-  // strokeDashoffset positions each segment along the path (negative = push forward)
-  const offsets = {
-    hot: 0,
-    warm: fracs.hot * C,
-    cold: (fracs.hot + fracs.warm) * C,
-  };
-
-  return (
-    <div className="flex flex-col rounded-xl border border-edge bg-surface-raised p-4 shadow-sm">
-      <div className="flex items-center gap-1.5">
-        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-ink-4">
-          <circle cx="8" cy="8" r="6" />
-          <path d="M8 8L8 2" />
-          <path d="M8 8L13 11" />
-        </svg>
-        <h2 className="text-xs font-semibold text-ink-2">Distribución</h2>
-      </div>
-
-      <div className="mt-3 flex flex-1 items-center gap-4">
-        {/* SVG donut ring */}
-        <svg
-          role="img"
-          aria-label={`Distribución de ${total} leads: ${hot} urgentes, ${warm} en seguimiento, ${cold} fríos`}
-          viewBox="0 0 100 100"
-          className="h-auto w-full max-w-[108px] shrink-0"
-        >
-          <title>Distribución de leads por temperatura</title>
-
-          {/* Track */}
-          <circle
-            cx="50"
-            cy="50"
-            r={R}
-            fill="none"
-            stroke="var(--color-edge)"
-            strokeWidth="10"
-          />
-
-          {/* Segments — group rotated so position 0 is at the top */}
-          <g style={{ transform: "rotate(-90deg)", transformOrigin: "50px 50px" }}>
-            {LEGEND.filter(({ key }) => lens[key] > 0).map(({ key, color, label }) => (
-              <circle
-                key={key}
-                cx="50"
-                cy="50"
-                r={R}
-                fill="none"
-                stroke={color}
-                strokeWidth="10"
-                strokeDasharray={`${lens[key]} ${C}`}
-                strokeDashoffset={-offsets[key]}
-                strokeLinecap="round"
-                aria-label={`${label}: ${counts[key]}`}
-              />
-            ))}
-          </g>
-
-          {/* Center label */}
           <text
             x="50"
             y="46"
             textAnchor="middle"
             fontSize="20"
-            fontWeight="bold"
+            fontWeight="700"
             fontFamily="monospace"
             fill="var(--color-ink)"
           >
@@ -138,47 +66,133 @@ export function DonutChart({ hot, warm, cold }: DonutChartProps) {
           </text>
           <text
             x="50"
-            y="59"
+            y="60"
             textAnchor="middle"
             fontSize="8"
             fill="var(--color-ink-3)"
           >
-            leads
+            total
           </text>
         </svg>
 
-        {/* Legend */}
-        <ul
-          className="flex min-w-0 flex-1 flex-col gap-1"
-          role="list"
-          aria-label="Leyenda de distribución"
+        <p className="text-xs text-ink-3">Sin leads clasificados</p>
+
+        {/* Legend dots row */}
+        <div className="flex items-center gap-4">
+          {LEGEND.map(({ key, label, color }) => (
+            <div key={key} className="flex items-center gap-1.5">
+              <span
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ background: color }}
+                aria-hidden="true"
+              />
+              <span className="text-[11px] text-ink-3">{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const fracs = { hot: hot / total, warm: warm / total, cold: cold / total };
+  const lens = {
+    hot: Math.max(0, fracs.hot * C - GAP),
+    warm: Math.max(0, fracs.warm * C - GAP),
+    cold: Math.max(0, fracs.cold * C - GAP),
+  };
+  const offsets = {
+    hot: 0,
+    warm: fracs.hot * C,
+    cold: (fracs.hot + fracs.warm) * C,
+  };
+
+  return (
+    <div className="flex flex-col items-center rounded-xl bg-surface-raised p-6 shadow-sm">
+      {/* Donut chart */}
+      <svg
+        role="img"
+        aria-label={`Distribución de ${total} leads: ${hot} urgentes, ${warm} en seguimiento, ${cold} fríos`}
+        viewBox="0 0 100 100"
+        className="h-auto w-full max-w-[144px]"
+      >
+        <title>Distribución de leads por temperatura</title>
+
+        {/* Track */}
+        <circle
+          cx="50"
+          cy="50"
+          r={R}
+          fill="none"
+          stroke="var(--color-edge)"
+          strokeWidth="11"
+        />
+
+        {/* Segments rotated so 0° is at the top */}
+        <g style={{ transform: "rotate(-90deg)", transformOrigin: "50px 50px" }}>
+          {LEGEND.filter(({ key }) => lens[key] > 0).map(({ key, color, label }) => (
+            <circle
+              key={key}
+              cx="50"
+              cy="50"
+              r={R}
+              fill="none"
+              stroke={color}
+              strokeWidth="11"
+              strokeDasharray={`${lens[key]} ${C}`}
+              strokeDashoffset={-offsets[key]}
+              strokeLinecap="round"
+              aria-label={`${label}: ${counts[key]}`}
+            />
+          ))}
+        </g>
+
+        {/* Center label */}
+        <text
+          x="50"
+          y="46"
+          textAnchor="middle"
+          fontSize="20"
+          fontWeight="700"
+          fontFamily="monospace"
+          fill="var(--color-ink)"
         >
-          {LEGEND.map(({ key, label, href, color }) => {
-            const count = counts[key];
-            const pct = Math.round(fracs[key] * 100);
-            return (
-              <li key={key}>
-                <Link
-                  href={href}
-                  className="flex items-center gap-2 rounded-md px-1.5 py-1 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ background: color }}
-                    aria-hidden="true"
-                  />
-                  <span className="min-w-0 flex-1 text-xs text-ink-2">{label}</span>
-                  <span className="font-mono text-xs font-semibold tabular-nums text-ink">
-                    {count}
-                  </span>
-                  <span className="w-8 text-right font-mono text-[10px] tabular-nums text-ink-4">
-                    {pct}%
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+          {total}
+        </text>
+        <text
+          x="50"
+          y="60"
+          textAnchor="middle"
+          fontSize="8"
+          fill="var(--color-ink-3)"
+        >
+          total
+        </text>
+      </svg>
+
+      {/* Legend with counts and percentages */}
+      <div className="mt-4 w-full space-y-1.5">
+        {LEGEND.map(({ key, label, href, color }) => {
+          const count = counts[key];
+          const pct = Math.round((count / total) * 100);
+          return (
+            <Link
+              key={key}
+              href={href}
+              className="flex items-center gap-2 transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ background: color }}
+                aria-hidden="true"
+              />
+              <span className="flex-1 text-[11px] text-ink-3">{label}</span>
+              <span className="font-mono text-[11px] font-semibold tabular-nums text-ink-2">
+                {count}
+              </span>
+              <span className="w-8 text-right font-mono text-[10px] text-ink-4">{pct}%</span>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

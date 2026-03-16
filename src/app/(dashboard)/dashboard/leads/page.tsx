@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import { getLeads } from "@/lib/queries/leads";
 import { LeadsTable } from "@/components/leads/LeadsTable";
+import { LeadsPageHeader } from "@/components/leads/LeadsPageHeader";
 
 interface SearchParams {
   page?: string;
@@ -14,6 +16,10 @@ interface SearchParams {
   sortBy?: string;
   sortDir?: string;
 }
+
+export const metadata: Metadata = {
+  title: "Leads | AgentsLeads",
+};
 
 export default async function LeadsPage({
   searchParams,
@@ -67,14 +73,10 @@ export default async function LeadsPage({
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-lg font-semibold text-ink">Clientes</h1>
-        <p className="mt-0.5 text-sm text-ink-3">
-          Todos los leads calificados por el bot
-        </p>
+    <div className="flex flex-col w-full max-w-[1400px] mx-auto">
+      <div className="pb-6">
+        <LeadsPageHeader />
       </div>
-
       <LeadsTable leads={leads} total={total} page={page} pageSize={pageSize} />
     </div>
   );

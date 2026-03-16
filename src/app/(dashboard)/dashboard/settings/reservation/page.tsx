@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getReservationConfig } from "@/lib/actions/reservationConfig";
 import { ReservationBlockManager } from "@/components/admin/ReservationBlockManager";
 import { CalendarCheck } from "lucide-react";
 // CalendarCheck is also re-exported from ReservationBlockManager for convenience
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Configuración · Reservas | AgentsLeads",
+};
 
 export default async function ReservationSettingsPage() {
   const supabase = await createClient();
@@ -29,7 +34,7 @@ export default async function ReservationSettingsPage() {
 
   if (!clientId) {
     return (
-      <div className="rounded-xl border border-dashed border-edge bg-canvas py-16 text-center max-w-2xl">
+      <div className="rounded-xl border border-dashed border-edge bg-canvas py-16 text-center w-full">
         <CalendarCheck className="mx-auto h-8 w-8 text-ink-4" aria-hidden="true" />
         <p className="mt-3 text-sm font-medium text-ink-3">Sin cliente asignado</p>
         <p className="mt-1 text-xs text-ink-4">

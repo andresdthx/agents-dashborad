@@ -10,13 +10,13 @@ const handoffConfig: Record<
     label: "Urgente",
     Icon: AlertTriangle,
     className:
-      "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
+      "border-lead-hot/30 bg-lead-hot-surface text-lead-hot-text",
   },
   requested: {
     label: "Solicitado",
     Icon: MessageSquare,
     className:
-      "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+      "border-lead-warm/30 bg-lead-warm-surface text-lead-warm-text",
   },
   technical: {
     label: "Técnico",
@@ -27,7 +27,7 @@ const handoffConfig: Record<
     label: "Observador",
     Icon: Eye,
     className:
-      "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400",
+      "border-lead-cold/30 bg-lead-cold-surface text-lead-cold-text",
   },
 };
 
