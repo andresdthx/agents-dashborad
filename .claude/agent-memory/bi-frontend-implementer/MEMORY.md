@@ -77,11 +77,26 @@
 - Los componentes UI disponibles: `badge`, `button`, `dialog`, `dropdown-menu`, `input`, `label`, `select`, `separator`, `sheet`, `sonner`, `table`, `textarea` — NO hay Switch ni Tabs de shadcn
 - `sort_order` para nueva FAQ: `Math.max(...faqs.map(f => f.sort_order)) + 1` — evita dependencia de COUNT de la DB
 
+### Supabase joins en service client (patrón crítico)
+- El cliente service NO puede hacer `.select("clients.plans(price_usd)")` cuando el tipo inferido del FK falla — error: `SelectQueryError<"could not find the relation...">`
+- Patrón correcto: obtener los IDs en una query, luego hacer una segunda query `.in("id", uniqueIds)` y cruzar con un Map en JS
+- Este patrón es más verboso pero 100% type-safe sin necesidad de castear a `unknown`
+
+### AdminDashboard ranking table — migración de ul/li a table
+- El ranking pasó de `<ul><li>` a `<table>` en Mar 2026 para soportar múltiples columnas
+- Las columnas nuevas (Conversión, Puntaje IA) usan `hidden sm:table-cell`; Bajas usa `hidden md:table-cell`
+- `ConversionRateCell` y `AvgScoreCell` son helper components internos al archivo con colores semánticos condicionados al valor
+
 ## KPIs/métricas expuestas en UI
 - `today` + delta vs `yesterday` — en StatsCards strip operacional
 - `hotConfirmed` / `hotPending` — en StatsCards card hot y dashboard banner
 - `resolved` / `lost` separados + tasa de éxito — en StatusBars
 - `reasoning` del clasificador IA — en lead detail (card con whitespace-pre-wrap)
 - `extracted_data` — en lead detail como key-value con keys humanizadas
-- Top 10 clientes por leads — en AdminDashboard
+- Top 10 clientes por leads — en AdminDashboard (tabla con columnas Conversión, Puntaje IA, Bajas)
 - Distribución global Hot/Warm/Cold — en AdminDashboard
+- MRR estimado ($X,XXX) — en StatTile de AdminDashboard con `text-signal`
+- Handoff breakdown por tipo (urgent/requested/technical/observer) — en card condicional AdminDashboard
+- Conversión a resolved por cliente (%) — en columna ranking AdminDashboard
+- Puntaje IA promedio por cliente — en columna ranking AdminDashboard
+- Leads perdidos (lost_count) por cliente — en columna ranking AdminDashboard
