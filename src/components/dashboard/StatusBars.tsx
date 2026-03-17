@@ -72,7 +72,7 @@ export function StatusBars({ statusCounts }: StatusBarsProps) {
       {/* Requieren atención humana */}
       {human_active > 0 ? (
         <Link
-          href="/dashboard/leads?paused=true"
+          href="/dashboard/leads?status=human_active"
           aria-label={`Requieren atención: ${human_active} conversaciones pendientes`}
           className="group rounded-2xl border border-bot-paused/30 bg-surface-raised p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
         >

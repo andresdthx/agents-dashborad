@@ -1,7 +1,7 @@
 "use client";
 
 import type { Notification } from "@/hooks/useRealtimeNotifications";
-import { Bell } from "lucide-react";
+import { Bell, CalendarX } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,6 +72,11 @@ export function NotificationBell({
                       <Badge className="border border-lead-hot/30 bg-lead-hot-surface text-lead-hot-text text-xs hover:bg-lead-hot-surface">
                         Lead hot
                       </Badge>
+                    ) : n.type === "calendar_error" ? (
+                      <Badge className="border border-destructive/30 bg-destructive/10 text-destructive text-xs hover:bg-destructive/10 flex items-center gap-1">
+                        <CalendarX className="h-3 w-3" />
+                        Error Google Calendar
+                      </Badge>
                     ) : (
                       <Badge className="border border-bot-paused/30 bg-bot-paused-surface text-bot-paused-text text-xs hover:bg-bot-paused-surface">
                         Agente pausado
@@ -81,7 +86,12 @@ export function NotificationBell({
                       {formatDistanceToNow(n.timestamp)}
                     </span>
                   </div>
-                  <span className="text-sm text-ink-2">{n.phone}</span>
+                  <span className="text-sm text-ink-2">{n.name ?? n.phone}</span>
+                  {n.type === "calendar_error" && (
+                    <span className="text-xs text-ink-3">
+                      El cliente debe agendar manualmente — el evento no se creó en Google Calendar.
+                    </span>
+                  )}
                 </div>
               </Link>
             </DropdownMenuItem>

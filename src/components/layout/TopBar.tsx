@@ -17,27 +17,12 @@ import { LogOut, Moon, Sun, Menu } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
-import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useDocumentTitle, getPageTitle } from "@/hooks/useDocumentTitle";
 
 interface TopBarProps {
   userEmail: string;
   clientId: string | null;
   onMenuOpen?: () => void;
-}
-
-const PAGE_LABELS: Record<string, string> = {
-  "/dashboard": "Inicio",
-  "/dashboard/leads": "Leads",
-  "/admin/clients": "Clientes",
-};
-
-function getPageLabel(pathname: string): string {
-  for (const [key, label] of Object.entries(PAGE_LABELS)) {
-    if (pathname === key || pathname.startsWith(key + "/")) {
-      return label;
-    }
-  }
-  return "Dashboard";
 }
 
 function ThemeToggle() {
@@ -66,7 +51,7 @@ function ThemeToggle() {
 export function TopBar({ userEmail, clientId, onMenuOpen }: TopBarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const pageLabel = getPageLabel(pathname);
+  const pageLabel = getPageTitle(pathname);
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [dateStr, setDateStr] = useState<string>("");
 
