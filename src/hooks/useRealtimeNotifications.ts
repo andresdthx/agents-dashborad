@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { getBrowserClient } from "@/lib/supabase/browser";
 
 const STORAGE_KEY = "agentsleads:notifications";
+const NOTIFICATIONS_LIMIT = 20;
 
 export interface Notification {
   id: string;
-  type: "hot_lead" | "bot_paused";
+  type: "hot_lead" | "bot_paused" | "calendar_error";
   leadId: string;
   phone: string;
+  name: string | null;
   timestamp: Date;
   read: boolean;
 }
@@ -94,8 +96,8 @@ export function useRealtimeNotifications(
           ...(filter ? { filter } : {}),
         },
         (payload: {
-          new: { id: string; phone: string; classification: string | null; bot_paused: boolean };
-          old: { classification: string | null; bot_paused: boolean };
+          new: { id: string; phone: string; name: string | null; classification: string | null; bot_paused: boolean; calendar_sync_failed: boolean; };
+          old: { classification: string | null; bot_paused: boolean; calendar_sync_failed: boolean; };
         }) => {
           const { new: record, old } = payload;
 
@@ -110,11 +112,12 @@ export function useRealtimeNotifications(
                   type: "hot_lead" as const,
                   leadId: record.id,
                   phone: record.phone,
+                  name: record.name,
                   timestamp: new Date(),
                   read: false,
                 },
                 ...prev,
-              ].slice(0, 20)
+              ].slice(0, NOTIFICATIONS_LIMIT)
             );
             onNewNotification?.();
             onDataChange?.();
@@ -130,11 +133,12 @@ export function useRealtimeNotifications(
                   type: "bot_paused" as const,
                   leadId: record.id,
                   phone: record.phone,
+                  name: record.name,
                   timestamp: new Date(),
                   read: false,
                 },
                 ...prev,
-              ].slice(0, 20)
+              ].slice(0, NOTIFICATIONS_LIMIT)
             );
             onNewNotification?.();
             onDataChange?.();
@@ -146,6 +150,27 @@ export function useRealtimeNotifications(
             setNotifications((prev) =>
               prev.filter((n) => !(n.type === "bot_paused" && n.leadId === record.id))
             );
+          }
+
+          // Google Calendar sync failed: notify agent to schedule manually
+          if (record.calendar_sync_failed && !old.calendar_sync_failed) {
+            setNotifications((prev) =>
+              [
+                {
+                  id: crypto.randomUUID(),
+                  type: "calendar_error" as const,
+                  leadId: record.id,
+                  phone: record.phone,
+                  name: record.name,
+                  timestamp: new Date(),
+                  read: false,
+                },
+                ...prev,
+              ].slice(0, NOTIFICATIONS_LIMIT)
+            );
+            onNewNotification?.();
+            onDataChange?.();
+            return;
           }
 
           // Refresh dashboard for any UPDATE (warm/cold classification, status changes, etc.)

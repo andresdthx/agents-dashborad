@@ -20,24 +20,6 @@ import { cn } from "@/lib/utils";
 import type { ReservationOutputField } from "@/types/database";
 
 // ---------------------------------------------------------------------------
-// Default fields — mirrors DEFAULT_RESERVATION_FIELDS in the Edge Function.
-// ---------------------------------------------------------------------------
-const DEFAULT_FIELDS: ReservationOutputField[] = [
-  { key: "nombre_lead",         label: "Nombre del cliente",   required: true,  hint: "Nombre completo del cliente" },
-  { key: "servicio",            label: "Servicio",             required: true,  hint: "Nombre exacto del servicio reservado" },
-  { key: "modalidad",           label: "Modalidad",            required: true,  hint: '"sede" o "domicilio"' },
-  { key: "direccion_domicilio", label: "Dirección domicilio",  required: false, hint: "Dirección completa si modalidad es domicilio, null si es sede" },
-  { key: "personas",            label: "Personas",             required: false, hint: "Número de personas que recibirán el servicio, null si no se especificó" },
-  { key: "fecha",               label: "Fecha",                required: true,  hint: "Formato YYYY-MM-DD (ej: 2026-03-15)" },
-  { key: "hora",                label: "Hora",                 required: true,  hint: 'Formato HH:MMam/pm o HH:MM 24h (ej: "10:00am" o "14:00")' },
-  { key: "add_ons",             label: "Complementos",         required: false, hint: "Array de complementos o servicios adicionales seleccionados, [] si ninguno" },
-  { key: "precio_servicio",     label: "Precio servicio",      required: false, hint: "Precio base del servicio en número, null si no se mencionó" },
-  { key: "recargo_domicilio",   label: "Recargo domicilio",    required: false, hint: "Recargo adicional por domicilio en número, null si no aplica" },
-  { key: "precio_total",        label: "Precio total",         required: false, hint: "Precio total incluyendo recargos en número, null si no se mencionó" },
-  { key: "email",               label: "Correo electrónico",   required: false, hint: "Correo electrónico del cliente, null si no lo mencionó" },
-];
-
-// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -45,6 +27,8 @@ interface FieldState {
   key: string;
   label: string;
   hint: string;
+  example?: string;
+  required: boolean;
   enabled: boolean;
   isDefault: boolean;
 }
@@ -60,39 +44,24 @@ interface Props {
 // ---------------------------------------------------------------------------
 
 function buildInitialFields(saved: ReservationOutputField[]): FieldState[] {
-  const savedKeys = new Set(saved.map((f) => f.key));
-  const savedByKey = new Map(saved.map((f) => [f.key, f]));
-
-  const result: FieldState[] = DEFAULT_FIELDS.map((def) => {
-    const savedField = savedByKey.get(def.key);
-    return {
-      key: def.key,
-      label: def.label,
-      hint: savedField?.hint ?? def.hint,
-      enabled: saved.length === 0 ? def.required : savedKeys.has(def.key),
-      isDefault: true,
-    };
-  });
-
-  for (const f of saved) {
-    if (!DEFAULT_FIELDS.some((d) => d.key === f.key)) {
-      result.push({
-        key: f.key,
-        label: f.label ?? f.key,
-        hint: f.hint ?? "",
-        enabled: true,
-        isDefault: false,
-      });
-    }
-  }
-
-  return result;
+  return saved.map((f) => ({
+    key: f.key,
+    label: f.label ?? f.key,
+    hint: f.hint ?? "",
+    example: f.example,
+    required: f.required ?? false,
+    enabled: true,
+    isDefault: false,
+  }));
 }
 
 function toOutputFields(fields: FieldState[]): ReservationOutputField[] {
   return fields
     .filter((f) => f.enabled)
-    .map(({ key, label, hint }) => ({ key, label, hint, required: true }));
+    .map(({ key, label, hint, example, required }) => ({
+      key, label, hint, required,
+      ...(example?.trim() ? { example: example.trim() } : {}),
+    }));
 }
 
 // ---------------------------------------------------------------------------
@@ -112,11 +81,12 @@ export function ReservationBlockManager({
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editHint, setEditHint] = useState("");
   const [editLabel, setEditLabel] = useState("");
+  const [editExample, setEditExample] = useState("");
   const [confirmDeleteKey, setConfirmDeleteKey] = useState<string | null>(null);
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [showNewForm, setShowNewForm] = useState(false);
-  const [newField, setNewField] = useState({ label: "", hint: "" });
+  const [newField, setNewField] = useState({ label: "", hint: "", example: "" });
 
   const pendingFieldsRef = useRef<FieldState[]>(fields);
   pendingFieldsRef.current = fields;
@@ -180,6 +150,7 @@ export function ReservationBlockManager({
     setEditingKey(field.key);
     setEditHint(field.hint);
     setEditLabel(field.label);
+    setEditExample(field.example ?? "");
     setExpandedKey(field.key);
     setConfirmDeleteKey(null);
   }, []);
@@ -188,6 +159,7 @@ export function ReservationBlockManager({
     setEditingKey(null);
     setEditHint("");
     setEditLabel("");
+    setEditExample("");
   }, []);
 
   const saveEdit = useCallback(async (field: FieldState) => {
@@ -199,7 +171,12 @@ export function ReservationBlockManager({
     const previous = pendingFieldsRef.current;
     const next = previous.map((f) =>
       f.key === field.key
-        ? { ...f, hint: editHint.trim(), label: field.isDefault ? f.label : (editLabel.trim() || f.key) }
+        ? {
+            ...f,
+            hint: editHint.trim().toUpperCase(),
+            example: editExample.trim() || undefined,
+            label: field.isDefault ? f.label : (editLabel.trim() || f.label),
+          }
         : f
     );
     setFields(next);
@@ -213,7 +190,7 @@ export function ReservationBlockManager({
     } else {
       toast.success("Campo actualizado");
     }
-  }, [editHint, editLabel, blockEnabled, persist]);
+  }, [editHint, editLabel, editExample, blockEnabled, persist]);
 
   // ── Delete (custom fields only) ───────────────────────────────────────────
 
@@ -239,17 +216,28 @@ export function ReservationBlockManager({
       toast.error("El nombre y el hint son obligatorios");
       return;
     }
-    const key = `campo_${Date.now()}`;
+    const slugLabel = newField.label
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_|_$/g, "");
+    const key = slugLabel || `campo_${Date.now()}`;
+    if (pendingFieldsRef.current.some((f) => f.key === key)) {
+      toast.error("Ya existe un campo con ese nombre. Cambia el nombre.");
+      return;
+    }
     const created: FieldState = {
       key,
       label: newField.label.trim(),
-      hint: newField.hint.trim(),
+      hint: newField.hint.trim().toUpperCase(),
+      example: newField.example.trim() || undefined,
+      required: false,
       enabled: true,
       isDefault: false,
     };
     const next = [...pendingFieldsRef.current, created];
     setFields(next);
-    setNewField({ label: "", hint: "" });
+    setNewField({ label: "", hint: "", example: "" });
     setShowNewForm(false);
     setExpandedKey(key);
     const error = await persist(next, blockEnabled);
@@ -261,7 +249,10 @@ export function ReservationBlockManager({
     }
   }, [newField, blockEnabled, persist]);
 
+  const CUSTOM_FIELD_LIMIT = 5;
+  const customFields = fields.filter((f) => !f.isDefault);
   const activeCount = fields.filter((f) => f.enabled).length;
+  const atLimit = customFields.length >= CUSTOM_FIELD_LIMIT;
 
   return (
     <div className="w-full space-y-5">
@@ -309,16 +300,78 @@ export function ReservationBlockManager({
             )}
           </div>
           {!showNewForm && (
-            <Button
-              size="sm"
-              onClick={() => setShowNewForm(true)}
-              aria-label="Agregar nuevo campo"
-            >
-              <Plus className="h-4 w-4" />
-              Nuevo campo
-            </Button>
+            atLimit ? (
+              <span className="text-xs text-ink-3">
+                Límite alcanzado ({CUSTOM_FIELD_LIMIT}/{CUSTOM_FIELD_LIMIT}) —{" "}
+                <span className="text-signal font-medium">compra más campos</span>
+              </span>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => setShowNewForm(true)}
+                aria-label="Agregar nuevo campo"
+              >
+                <Plus className="h-4 w-4" />
+                Nuevo campo {customFields.length > 0 && `(${customFields.length}/${CUSTOM_FIELD_LIMIT})`}
+              </Button>
+            )
           )}
         </div>
+
+        {/* Formulario nuevo campo — aparece arriba de la lista */}
+        {showNewForm && (
+          <div className="rounded-xl border border-edge bg-surface-raised shadow-sm p-4 space-y-3">
+            <p className="text-sm font-semibold text-ink">Nuevo campo</p>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-field-label">Nombre del dato</Label>
+              <Input
+                id="new-field-label"
+                value={newField.label}
+                onChange={(e) => setNewField((prev) => ({ ...prev, label: e.target.value }))}
+                placeholder="ej: Número de teléfono"
+                maxLength={30}
+                autoFocus
+              />
+              <p className="text-[11px] text-ink-4">Máx. 30 caracteres. Se guarda tal como lo escribes.</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-field-hint">¿Cómo lo pide el agente?</Label>
+              <Input
+                id="new-field-hint"
+                value={newField.hint}
+                onChange={(e) => setNewField((prev) => ({ ...prev, hint: e.target.value.toUpperCase() }))}
+                placeholder="ej: TELÉFONO"
+                maxLength={30}
+              />
+              <p className="text-[11px] text-ink-4">Máx. 30 caracteres. Se guarda en mayúsculas.</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-field-example">
+                Ejemplo <span className="text-ink-4 font-normal">(opcional)</span>
+              </Label>
+              <Input
+                id="new-field-example"
+                value={newField.example}
+                onChange={(e) => setNewField((prev) => ({ ...prev, example: e.target.value }))}
+                placeholder="ej: +57 300 123 4567"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={handleAddField}>
+                <Check className="h-4 w-4" />
+                Crear campo
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => { setShowNewForm(false); setNewField({ label: "", hint: "", example: "" }); }}
+              >
+                <X className="h-4 w-4" />
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Lista */}
         <div className="space-y-2">
@@ -357,23 +410,25 @@ export function ReservationBlockManager({
 
                   {/* Controles */}
                   <div className="flex shrink-0 items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleField(field.key)}
-                      disabled={togglingKey === field.key}
-                      aria-label={field.enabled ? "Desactivar campo" : "Activar campo"}
-                      className={cn(
-                        "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-                        field.enabled ? "bg-signal" : "bg-edge"
-                      )}
-                    >
-                      <span
+                    {!field.isDefault && (
+                      <button
+                        type="button"
+                        onClick={() => handleToggleField(field.key)}
+                        disabled={togglingKey === field.key}
+                        aria-label={field.enabled ? "Desactivar campo" : "Activar campo"}
                         className={cn(
-                          "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition-transform",
-                          field.enabled ? "translate-x-4" : "translate-x-0"
+                          "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+                          field.enabled ? "bg-signal" : "bg-edge"
                         )}
-                      />
-                    </button>
+                      >
+                        <span
+                          className={cn(
+                            "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition-transform",
+                            field.enabled ? "translate-x-4" : "translate-x-0"
+                          )}
+                        />
+                      </button>
+                    )}
 
                     <Button
                       type="button"
@@ -404,22 +459,32 @@ export function ReservationBlockManager({
                               value={editLabel}
                               onChange={(e) => setEditLabel(e.target.value)}
                               placeholder="ej: Número de teléfono"
+                              maxLength={30}
                             />
+                            <p className="text-[11px] text-ink-4">Máx. 30 caracteres.</p>
                           </div>
                         )}
                         <div className="space-y-1.5">
-                          <Label htmlFor={`hint-${field.key}`}>
-                            ¿Cómo debe pedirlo o entenderlo el agente?
-                          </Label>
+                          <Label htmlFor={`hint-${field.key}`}>¿Cómo lo pide el agente?</Label>
                           <Input
                             id={`hint-${field.key}`}
                             value={editHint}
-                            onChange={(e) => setEditHint(e.target.value)}
-                            placeholder="ej: Formato YYYY-MM-DD (día, mes, año)"
+                            onChange={(e) => setEditHint(e.target.value.toUpperCase())}
+                            placeholder="ej: TELÉFONO"
+                            maxLength={30}
                           />
-                          <p className="text-[11px] text-ink-4">
-                            Esta instrucción le indica al agente qué formato o aclaración aplicar al capturar este dato.
-                          </p>
+                          <p className="text-[11px] text-ink-4">Máx. 30 caracteres. Se guarda en mayúsculas.</p>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`example-${field.key}`}>
+                            Ejemplo <span className="text-ink-4 font-normal">(opcional)</span>
+                          </Label>
+                          <Input
+                            id={`example-${field.key}`}
+                            value={editExample}
+                            onChange={(e) => setEditExample(e.target.value)}
+                            placeholder="ej: YYYY-MM-DD"
+                          />
                         </div>
                         <div className="flex gap-2">
                           <Button size="sm" onClick={() => saveEdit(field)} disabled={savingKey === field.key}>
@@ -434,39 +499,48 @@ export function ReservationBlockManager({
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <p className="text-xs text-ink-3 bg-canvas rounded-lg px-3 py-2">
-                          {field.hint}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Button size="sm" variant="outline" onClick={() => startEdit(field)}>
-                            Editar
-                          </Button>
-                          {isConfirmingDelete ? (
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-ink-3">¿Eliminar definitivamente?</span>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDelete(field.key)}
-                              >
-                                Sí, eliminar
-                              </Button>
-                              <Button size="sm" variant="ghost" onClick={() => setConfirmDeleteKey(null)}>
-                                Cancelar
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => setConfirmDeleteKey(field.key)}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              Eliminar
-                            </Button>
+                        <div className="bg-canvas rounded-lg px-3 py-2 space-y-0.5">
+                          <p className="text-xs text-ink-3">
+                            <span className="text-ink-4">Hint: </span>{field.hint}
+                          </p>
+                          {field.example && (
+                            <p className="text-xs text-ink-4">
+                              <span>Ejemplo: </span>{field.example}
+                            </p>
                           )}
                         </div>
+                        {!field.isDefault && (
+                          <div className="flex items-center gap-2">
+                            <Button size="sm" variant="outline" onClick={() => startEdit(field)}>
+                              Editar
+                            </Button>
+                            {isConfirmingDelete ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-ink-3">¿Eliminar definitivamente?</span>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDelete(field.key)}
+                                >
+                                  Sí, eliminar
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => setConfirmDeleteKey(null)}>
+                                  Cancelar
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setConfirmDeleteKey(field.key)}
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Eliminar
+                              </Button>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -487,45 +561,6 @@ export function ReservationBlockManager({
           )}
         </div>
 
-        {/* Formulario nuevo campo */}
-        {showNewForm && (
-          <div className="rounded-xl border border-edge bg-surface-raised shadow-sm p-4 space-y-3">
-            <p className="text-sm font-semibold text-ink">Nuevo campo</p>
-            <div className="space-y-1.5">
-              <Label htmlFor="new-field-label">Nombre del dato</Label>
-              <Input
-                id="new-field-label"
-                value={newField.label}
-                onChange={(e) => setNewField((prev) => ({ ...prev, label: e.target.value }))}
-                placeholder="ej: Número de teléfono"
-                autoFocus
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="new-field-hint">¿Cómo debe pedirlo o entenderlo el agente?</Label>
-              <Input
-                id="new-field-hint"
-                value={newField.hint}
-                onChange={(e) => setNewField((prev) => ({ ...prev, hint: e.target.value }))}
-                placeholder="ej: Número con código de país, ej: +57 300 123 4567"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" onClick={handleAddField}>
-                <Check className="h-4 w-4" />
-                Crear campo
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => { setShowNewForm(false); setNewField({ label: "", hint: "" }); }}
-              >
-                <X className="h-4 w-4" />
-                Cancelar
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
 
     </div>

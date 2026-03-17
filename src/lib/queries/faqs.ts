@@ -1,5 +1,8 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, ClientFaq } from "@/types/database";
+import type { PostgrestError } from "@supabase/postgrest-js";
 
+type AppSupabaseClient = SupabaseClient<Database>;
 type FaqInsert = Database["public"]["Tables"]["client_faqs"]["Insert"];
 type FaqUpdate = Database["public"]["Tables"]["client_faqs"]["Update"];
 
@@ -9,28 +12,26 @@ export type { FaqInsert, FaqUpdate };
  * Crea una nueva FAQ. Acepta el cliente de Supabase del browser (para mutaciones client-side).
  */
 export async function createFaq(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: AppSupabaseClient,
   data: FaqInsert
-): Promise<{ faq: ClientFaq | null; error: Error | null }> {
+): Promise<{ faq: ClientFaq | null; error: PostgrestError | null }> {
   const { data: faq, error } = await supabase
     .from("client_faqs")
     .insert(data)
     .select()
     .single();
 
-  return { faq: faq as ClientFaq | null, error: error as Error | null };
+  return { faq: faq as ClientFaq | null, error };
 }
 
 /**
  * Actualiza campos de una FAQ existente.
  */
 export async function updateFaq(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: AppSupabaseClient,
   id: string,
   data: FaqUpdate
-): Promise<{ faq: ClientFaq | null; error: Error | null }> {
+): Promise<{ faq: ClientFaq | null; error: PostgrestError | null }> {
   const { data: faq, error } = await supabase
     .from("client_faqs")
     .update(data)
@@ -38,33 +39,31 @@ export async function updateFaq(
     .select()
     .single();
 
-  return { faq: faq as ClientFaq | null, error: error as Error | null };
+  return { faq: faq as ClientFaq | null, error };
 }
 
 /**
  * Elimina una FAQ permanentemente.
  */
 export async function deleteFaq(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: AppSupabaseClient,
   id: string
-): Promise<{ error: Error | null }> {
+): Promise<{ error: PostgrestError | null }> {
   const { error } = await supabase
     .from("client_faqs")
     .delete()
     .eq("id", id);
 
-  return { error: error as Error | null };
+  return { error };
 }
 
 /**
  * Activa o desactiva una FAQ (toggle is_active).
  */
 export async function toggleFaqActive(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: AppSupabaseClient,
   id: string,
   is_active: boolean
-): Promise<{ faq: ClientFaq | null; error: Error | null }> {
+): Promise<{ faq: ClientFaq | null; error: PostgrestError | null }> {
   return updateFaq(supabase, id, { is_active });
 }

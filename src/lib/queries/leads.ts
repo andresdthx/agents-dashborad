@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Lead } from "@/types/database";
+import type { PostgrestError } from "@supabase/postgrest-js";
 
 export async function getLeadStats() {
   const supabase = await createClient();
@@ -169,16 +170,19 @@ export async function getLeadChartData() {
     supabase.from("leads").select("*", { count: "exact", head: true }).eq("status", "lost"),
   ]);
 
-  // Build 7-day trend array (UTC dates)
+  // Build 7-day trend array using a Map for O(n) lookup
   const days: { date: string; count: number }[] = [];
+  const dayMap = new Map<string, { date: string; count: number }>();
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    days.push({ date: d.toISOString().slice(0, 10), count: 0 });
+    const entry = { date: d.toISOString().slice(0, 10), count: 0 };
+    days.push(entry);
+    dayMap.set(entry.date, entry);
   }
   for (const row of weekRaw ?? []) {
     const key = (row.created_at as string).slice(0, 10);
-    const day = days.find((d) => d.date === key);
+    const day = dayMap.get(key);
     if (day) day.count++;
   }
 
@@ -195,7 +199,7 @@ export async function getLeadChartData() {
 
 export async function getLeadById(
   id: string
-): Promise<{ lead: Lead | null; error: Error | null }> {
+): Promise<{ lead: Lead | null; error: PostgrestError | null }> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -204,5 +208,5 @@ export async function getLeadById(
     .eq("id", id)
     .single();
 
-  return { lead: data as Lead | null, error: error as Error | null };
+  return { lead: data, error };
 }

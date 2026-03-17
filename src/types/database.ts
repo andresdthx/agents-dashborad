@@ -15,10 +15,11 @@ export type CatalogColMapping = Partial<Record<CatalogSystemKey, string>>;
 
 /** Describes a single field the LLM must emit inside the RESERVA_INICIO/FIN block (migration 064). */
 export interface ReservationOutputField {
-  key: string;       // JSON key emitted by the LLM (e.g. "nombre_lead")
-  label: string;     // Human-readable label for the admin UI
-  required: boolean; // Whether the LLM must always provide this field
-  hint: string;      // Instruction injected into the prompt for this field
+  key: string;        // JSON key emitted by the LLM (e.g. "nombre_lead")
+  label: string;      // Human-readable label for the admin UI
+  required: boolean;  // Whether the LLM must always provide this field
+  hint: string;       // Short keyword the LLM uses for this field (e.g. "FECHA"), max 10 chars uppercase
+  example?: string;   // Optional format example shown to the LLM (e.g. "YYYY-MM-DD")
 }
 
 export type Database = {
@@ -100,8 +101,9 @@ export type Database = {
           handoff_mode: "urgent" | "requested" | "technical" | "observer" | null;
           handoff_reason: string | null;
           extracted_data: Record<string, unknown> | null;
-          order_data: Record<string, unknown> | null;
+          order_data: Array<Record<string, unknown>> | null;
           order_confirmed_at: string | null;
+          calendar_sync_failed: boolean;
           reasoning: string | null;
           created_at: string;
           updated_at: string | null;
@@ -120,7 +122,7 @@ export type Database = {
           handoff_mode?: "urgent" | "requested" | "technical" | "observer" | null;
           handoff_reason?: string | null;
           extracted_data?: Record<string, unknown> | null;
-          order_data?: Record<string, unknown> | null;
+          order_data?: Array<Record<string, unknown>> | null;
         };
         Update: {
           phone?: string;
@@ -136,7 +138,7 @@ export type Database = {
           handoff_mode?: "urgent" | "requested" | "technical" | "observer" | null;
           handoff_reason?: string | null;
           extracted_data?: Record<string, unknown> | null;
-          order_data?: Record<string, unknown> | null;
+          order_data?: Array<Record<string, unknown>> | null;
         };
         Relationships: [];
       };

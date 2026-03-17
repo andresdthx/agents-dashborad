@@ -165,7 +165,7 @@ export async function getClientsSummary(): Promise<ClientSummary[]> {
   }
 
   for (const lead of leads) {
-    const clientId = lead.client_id as string;
+    const clientId = lead.client_id!;
     const entry = summaryMap.get(clientId);
     if (!entry) continue;
     entry.total_leads++;
@@ -217,9 +217,11 @@ export async function getGlobalLeadChartData(): Promise<{
     d.setDate(d.getDate() - i);
     days.push({ date: d.toISOString().slice(0, 10), count: 0 });
   }
+  const dayMap = new Map<string, { date: string; count: number }>();
+  for (const d of days) dayMap.set(d.date, d);
   for (const row of weekRaw ?? []) {
     const key = (row.created_at as string).slice(0, 10);
-    const day = days.find((dd) => dd.date === key);
+    const day = dayMap.get(key);
     if (day) day.count++;
   }
 

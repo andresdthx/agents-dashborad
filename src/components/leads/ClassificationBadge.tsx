@@ -55,10 +55,10 @@ export function ClassificationBadge({ classification, confirmed }: Props) {
             "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-semibold",
             styles.hot
           )}
-          title="Lead urgente con información pendiente de recopilar"
+          title="Cliente potencial de compra"
         >
           <AlertCircle className="h-3 w-3 shrink-0" />
-          Hot · Pendiente
+          Hot · Potencial
         </span>
       );
     }
