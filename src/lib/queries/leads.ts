@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import type { Lead } from "@/types/database";
 import type { PostgrestError } from "@supabase/postgrest-js";
 
@@ -91,6 +92,7 @@ export async function getLeads({
   dateFrom,
   dateTo,
   minScore,
+  clientId,
   sortBy = "name",
   sortDir = "asc",
 }: {
@@ -104,6 +106,7 @@ export async function getLeads({
   dateFrom?: string;
   dateTo?: string;
   minScore?: number;
+  clientId?: string;
   sortBy?: "name" | "score" | "created_at" | "classification" | "updated_at";
   sortDir?: "asc" | "desc";
 }) {
@@ -144,6 +147,7 @@ export async function getLeads({
     query = query.lt("created_at", endDate.toISOString().slice(0, 10));
   }
   if (minScore !== undefined) query = query.gte("score", minScore);
+  if (clientId) query = query.eq("client_id", clientId);
 
   const { data, count, error } = await query;
   return { leads: data ?? [], total: count ?? 0, error };
@@ -209,4 +213,73 @@ export async function getLeadById(
     .single();
 
   return { lead: data, error };
+}
+
+export async function getAdminLeads({
+  page = 1,
+  pageSize = 25,
+  classification,
+  botPaused,
+  status,
+  handoffMode,
+  search,
+  dateFrom,
+  dateTo,
+  minScore,
+  clientId,
+  sortBy = "updated_at",
+  sortDir = "desc",
+}: {
+  page?: number;
+  pageSize?: number;
+  classification?: "hot" | "warm" | "cold";
+  botPaused?: boolean;
+  status?: "bot_active" | "human_active" | "resolved" | "lost";
+  handoffMode?: "urgent" | "requested" | "technical" | "observer";
+  search?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  minScore?: number;
+  clientId?: string;
+  sortBy?: "name" | "score" | "created_at" | "classification" | "updated_at";
+  sortDir?: "asc" | "desc";
+}) {
+  const supabase = createServiceClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const ascending = sortDir === "asc";
+
+  let query = supabase
+    .from("leads")
+    .select(
+      "id, phone, name, classification, score, bot_paused, bot_paused_reason, bot_paused_at, status, handoff_mode, handoff_reason, order_confirmed_at, created_at, updated_at, client_id",
+      { count: "exact" }
+    )
+    .order(sortBy, { ascending, nullsFirst: false })
+    .range(from, to);
+
+  if (sortBy === "updated_at") {
+    query = query.order("created_at", { ascending: false });
+  }
+  if (sortBy === "name") {
+    query = query.order("phone", { ascending: true });
+  }
+
+  if (classification) query = query.eq("classification", classification);
+  if (botPaused !== undefined) query = query.eq("bot_paused", botPaused);
+  if (status) query = query.eq("status", status);
+  if (handoffMode) query = query.eq("handoff_mode", handoffMode);
+  if (search) query = query.or(`phone.ilike.%${search}%,name.ilike.%${search}%`);
+  if (dateFrom) query = query.gte("created_at", dateFrom);
+  if (dateTo) {
+    const endDate = new Date(dateTo);
+    endDate.setDate(endDate.getDate() + 1);
+    query = query.lt("created_at", endDate.toISOString().slice(0, 10));
+  }
+  if (minScore !== undefined) query = query.gte("score", minScore);
+  if (clientId) query = query.eq("client_id", clientId);
+
+  const { data, count, error } = await query;
+  return { leads: data ?? [], total: count ?? 0, error };
 }

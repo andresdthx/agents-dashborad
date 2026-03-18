@@ -30,7 +30,10 @@ const clientLinks = (role: "super_admin" | "client_agent") => [
   { href: "/dashboard/leads", label: role === "super_admin" ? "Leads" : "Clientes", icon: Users },
 ];
 
-const adminLinks = [{ href: "/admin/clients", label: "Clientes", icon: Building2 }];
+const adminLinks = [
+  { href: "/admin/clients", label: "Clientes", icon: Building2 },
+  { href: "/admin/chats", label: "Monitor de chats", icon: MessageSquare },
+];
 
 const settingsLinks = [
   { href: "/dashboard/settings/agent", label: "Entrenar Agente", icon: Bot },
