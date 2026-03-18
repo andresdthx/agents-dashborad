@@ -232,6 +232,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      client_handoffs: {
+        Row: {
+          id: string;
+          client_id: string;
+          trigger: string;
+          urgent: boolean;
+          response: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          client_id: string;
+          trigger: string;
+          urgent?: boolean;
+          response?: string | null;
+          sort_order?: number;
+        };
+        Update: {
+          trigger?: string;
+          urgent?: boolean;
+          response?: string | null;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       client_faqs: {
         Row: {
           id: string;
@@ -289,6 +316,8 @@ export type Database = {
           block_enabled: boolean;
           /** Free-text example of the confirmation message. Injected into <BloqueReserva> at runtime (migration 065). */
           confirmation_example: string;
+          /** Weekly schedule: { "_duration": minutes, "0"-"6": number[] of appointment start hours }. null = use global constants. */
+          schedule: Record<string, unknown> | null;
           created_at: string;
           updated_at: string;
         };
@@ -297,11 +326,13 @@ export type Database = {
           output_fields?: ReservationOutputField[];
           block_enabled?: boolean;
           confirmation_example?: string;
+          schedule?: Record<string, unknown> | null;
         };
         Update: {
           output_fields?: ReservationOutputField[];
           block_enabled?: boolean;
           confirmation_example?: string;
+          schedule?: Record<string, unknown> | null;
         };
         Relationships: [];
       };

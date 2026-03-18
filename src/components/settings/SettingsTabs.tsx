@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, MessageSquare, ArrowLeftRight, CalendarCheck, TableProperties } from "lucide-react";
+import { Bot, MessageSquare, ArrowLeftRight, CalendarCheck, TableProperties, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { label: "Agente", href: "/dashboard/settings/agent", icon: Bot },
   { label: "Campos de confirmación", href: "/dashboard/settings/reservation", icon: CalendarCheck },
+  { label: "Agenda", href: "/dashboard/settings/schedule", icon: Clock },
   { label: "Transferencias", href: "/dashboard/settings/handoff", icon: ArrowLeftRight },
   { label: "Preguntas frecuentes", href: "/dashboard/settings/faqs", icon: MessageSquare },
   { label: "Columnas del Sheet", href: "/dashboard/settings/catalog", icon: TableProperties },

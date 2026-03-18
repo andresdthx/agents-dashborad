@@ -12,8 +12,9 @@ import {
   Shield,
   CalendarCheck,
   TableProperties,
-  ChevronLeft,
-  ChevronRight,
+  Clock,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -34,6 +35,7 @@ const adminLinks = [{ href: "/admin/clients", label: "Clientes", icon: Building2
 const settingsLinks = [
   { href: "/dashboard/settings/agent", label: "Entrenar Agente", icon: Bot },
   { href: "/dashboard/settings/reservation", label: "Campos de confirmación", icon: CalendarCheck },
+  { href: "/dashboard/settings/schedule", label: "Agenda", icon: Clock },
   { href: "/dashboard/settings/handoff", label: "Transferencias", icon: ArrowLeftRight },
   { href: "/dashboard/settings/faqs", label: "Preguntas frecuentes", icon: MessageSquare },
   { href: "/dashboard/settings/catalog", label: "Columnas del Sheet", icon: TableProperties },
@@ -94,19 +96,33 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
       <div
         className={cn(
           "flex h-14 items-center border-b border-edge",
-          collapsed ? "justify-center px-2" : "gap-2.5 px-4"
+          collapsed ? "justify-between px-2" : "gap-2.5 px-3"
         )}
       >
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-signal shadow-sm">
-          <Image
-            src="/white-logo.png"
-            alt="Avatha IA logo"
-            width={20}
-            height={20}
-          />
-        </div>
-        {!collapsed && (
-          <span className="text-sm font-semibold tracking-tight text-ink">Avatha IA</span>
+        {collapsed ? (
+          <button
+            onClick={() => setCollapsed(false)}
+            aria-label="Expandir menú"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-surface-raised hover:text-ink-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-signal"
+          >
+            <PanelLeftOpen className="h-4 w-4" />
+          </button>
+        ) : (
+          <>
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-signal shadow-sm">
+                <Image src="/white-logo.png" alt="Avatha IA logo" width={20} height={20} />
+              </div>
+              <span className="text-sm font-semibold tracking-tight text-ink">Avatha IA</span>
+            </div>
+            <button
+              onClick={() => setCollapsed(true)}
+              aria-label="Colapsar menú"
+              className="ml-auto flex h-8 w-8 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-surface-raised hover:text-ink-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-signal"
+            >
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
+          </>
         )}
       </div>
 
@@ -195,16 +211,6 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
         </div>
       )}
 
-      {/* Collapse toggle */}
-      <button
-        onClick={() => setCollapsed((c) => !c)}
-        aria-label={collapsed ? "Expandir menú" : "Colapsar menú"}
-        className={cn(
-          "absolute -right-3 top-[60px] z-10 flex h-6 w-6 items-center justify-center rounded-full border border-edge bg-surface-raised text-ink-3 shadow-sm transition-colors hover:bg-surface-overlay hover:text-ink-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-signal"
-        )}
-      >
-        {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
-      </button>
     </aside>
   );
 }
