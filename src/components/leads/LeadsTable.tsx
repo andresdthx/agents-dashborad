@@ -65,7 +65,25 @@ const statusDotAnimate: Record<string, boolean> = {
   lost: false,
 };
 
-type SortField = "name" | "score" | "created_at" | "classification";
+type SortField = "name" | "score" | "created_at" | "classification" | "updated_at";
+
+function SortIcon({
+  field,
+  currentSortBy,
+  currentSortDir,
+}: {
+  field: SortField;
+  currentSortBy: SortField;
+  currentSortDir: string;
+}) {
+  if (currentSortBy !== field)
+    return <ArrowUpDown className="ml-1 inline h-3 w-3 text-ink-4" />;
+  return currentSortDir === "asc" ? (
+    <ArrowUp className="ml-1 inline h-3 w-3 text-signal" />
+  ) : (
+    <ArrowDown className="ml-1 inline h-3 w-3 text-signal" />
+  );
+}
 
 interface Props {
   leads: Pick<
@@ -136,16 +154,6 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
     },
     [router, searchParams, currentSortBy, currentSortDir]
   );
-
-  function SortIcon({ field }: { field: SortField }) {
-    if (currentSortBy !== field)
-      return <ArrowUpDown className="ml-1 inline h-3 w-3 text-ink-4" />;
-    return currentSortDir === "asc" ? (
-      <ArrowUp className="ml-1 inline h-3 w-3 text-signal" />
-    ) : (
-      <ArrowDown className="ml-1 inline h-3 w-3 text-signal" />
-    );
-  }
 
   const totalPages = Math.ceil(total / pageSize);
 
@@ -282,7 +290,7 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                   aria-label="Ordenar por nombre"
                 >
                   Nombre
-                  <SortIcon field="name" />
+                  <SortIcon field="name" currentSortBy={currentSortBy} currentSortDir={currentSortDir} />
                 </button>
               </TableHead>
               <TableHead className="py-4 text-xs font-semibold text-ink-3">
@@ -295,7 +303,7 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                   aria-label="Ordenar por clasificación"
                 >
                   Clasificación
-                  <SortIcon field="classification" />
+                  <SortIcon field="classification" currentSortBy={currentSortBy} currentSortDir={currentSortDir} />
                 </button>
               </TableHead>
               <TableHead className="py-4 text-xs font-semibold text-ink-3">
@@ -305,7 +313,7 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                   aria-label="Ordenar por puntaje IA"
                 >
                   Puntaje IA
-                  <SortIcon field="score" />
+                  <SortIcon field="score" currentSortBy={currentSortBy} currentSortDir={currentSortDir} />
                 </button>
               </TableHead>
               <TableHead className="py-4 text-xs font-semibold text-ink-3">
@@ -321,7 +329,7 @@ export function LeadsTable({ leads, total, page, pageSize }: Props) {
                   aria-label="Ordenar por fecha"
                 >
                   Fecha
-                  <SortIcon field="created_at" />
+                  <SortIcon field="created_at" currentSortBy={currentSortBy} currentSortDir={currentSortDir} />
                 </button>
               </TableHead>
               <TableHead className="py-4 text-xs font-semibold text-ink-3">

@@ -13,31 +13,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Moon, Sun, Menu } from "lucide-react";
+import { LogOut, Moon, Sun, Menu, ArrowLeft } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
-import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useDocumentTitle, getPageTitle } from "@/hooks/useDocumentTitle";
 
 interface TopBarProps {
   userEmail: string;
   clientId: string | null;
   onMenuOpen?: () => void;
-}
-
-const PAGE_LABELS: Record<string, string> = {
-  "/dashboard": "Inicio",
-  "/dashboard/leads": "Leads",
-  "/admin/clients": "Clientes",
-};
-
-function getPageLabel(pathname: string): string {
-  for (const [key, label] of Object.entries(PAGE_LABELS)) {
-    if (pathname === key || pathname.startsWith(key + "/")) {
-      return label;
-    }
-  }
-  return "Dashboard";
 }
 
 function ThemeToggle() {
@@ -66,7 +51,7 @@ function ThemeToggle() {
 export function TopBar({ userEmail, clientId, onMenuOpen }: TopBarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const pageLabel = getPageLabel(pathname);
+  const pageLabel = getPageTitle(pathname);
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [dateStr, setDateStr] = useState<string>("");
 
@@ -103,6 +88,10 @@ export function TopBar({ userEmail, clientId, onMenuOpen }: TopBarProps) {
     router.refresh();
   }
 
+  const showBack =
+    pathname.startsWith("/dashboard/leads/") ||
+    pathname.startsWith("/admin/clients/");
+
   const localPart = userEmail.split("@")[0] ?? userEmail;
   const initials = localPart.slice(0, 2).toUpperCase();
 
@@ -117,6 +106,15 @@ export function TopBar({ userEmail, clientId, onMenuOpen }: TopBarProps) {
           >
             <Menu className="h-5 w-5" />
           </button>
+        )}
+        {showBack && (
+          <Link
+            href="/dashboard"
+            aria-label="Volver al dashboard"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-surface-raised hover:text-ink-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-signal"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
         )}
         <Link href="/dashboard" className="flex items-center">
           <span className="text-base font-semibold text-ink">{pageLabel}</span>

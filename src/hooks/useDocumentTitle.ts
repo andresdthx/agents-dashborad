@@ -3,13 +3,14 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-const PAGE_TITLES: Record<string, string> = {
+export const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Inicio",
   "/dashboard/leads": "Leads",
   "/dashboard/settings/agent": "Configuración · Agente",
   "/dashboard/settings/catalog": "Configuración · Catálogo",
   "/dashboard/settings/handoff": "Configuración · Transferencias",
   "/dashboard/settings/reservation": "Configuración · Reservas",
+  "/dashboard/settings/schedule": "Configuración · Agenda",
   "/dashboard/settings/faqs": "Configuración · FAQs",
   "/admin/clients": "Clientes",
   "/admin/clients/new": "Nuevo cliente",
@@ -17,7 +18,7 @@ const PAGE_TITLES: Record<string, string> = {
 
 const APP_NAME = "AgentsLeads";
 
-function getPageTitle(pathname: string): string {
+export function getPageTitle(pathname: string): string {
   // Exact match first
   if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
 

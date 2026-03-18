@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import type { Lead } from "@/types/database";
+import type { PostgrestError } from "@supabase/postgrest-js";
 
 export async function getLeadStats() {
   const supabase = await createClient();
@@ -90,6 +92,7 @@ export async function getLeads({
   dateFrom,
   dateTo,
   minScore,
+  clientId,
   sortBy = "name",
   sortDir = "asc",
 }: {
@@ -103,6 +106,7 @@ export async function getLeads({
   dateFrom?: string;
   dateTo?: string;
   minScore?: number;
+  clientId?: string;
   sortBy?: "name" | "score" | "created_at" | "classification" | "updated_at";
   sortDir?: "asc" | "desc";
 }) {
@@ -143,6 +147,7 @@ export async function getLeads({
     query = query.lt("created_at", endDate.toISOString().slice(0, 10));
   }
   if (minScore !== undefined) query = query.gte("score", minScore);
+  if (clientId) query = query.eq("client_id", clientId);
 
   const { data, count, error } = await query;
   return { leads: data ?? [], total: count ?? 0, error };
@@ -169,16 +174,19 @@ export async function getLeadChartData() {
     supabase.from("leads").select("*", { count: "exact", head: true }).eq("status", "lost"),
   ]);
 
-  // Build 7-day trend array (UTC dates)
+  // Build 7-day trend array using a Map for O(n) lookup
   const days: { date: string; count: number }[] = [];
+  const dayMap = new Map<string, { date: string; count: number }>();
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    days.push({ date: d.toISOString().slice(0, 10), count: 0 });
+    const entry = { date: d.toISOString().slice(0, 10), count: 0 };
+    days.push(entry);
+    dayMap.set(entry.date, entry);
   }
   for (const row of weekRaw ?? []) {
     const key = (row.created_at as string).slice(0, 10);
-    const day = days.find((d) => d.date === key);
+    const day = dayMap.get(key);
     if (day) day.count++;
   }
 
@@ -195,7 +203,7 @@ export async function getLeadChartData() {
 
 export async function getLeadById(
   id: string
-): Promise<{ lead: Lead | null; error: Error | null }> {
+): Promise<{ lead: Lead | null; error: PostgrestError | null }> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -204,5 +212,74 @@ export async function getLeadById(
     .eq("id", id)
     .single();
 
-  return { lead: data as Lead | null, error: error as Error | null };
+  return { lead: data, error };
+}
+
+export async function getAdminLeads({
+  page = 1,
+  pageSize = 25,
+  classification,
+  botPaused,
+  status,
+  handoffMode,
+  search,
+  dateFrom,
+  dateTo,
+  minScore,
+  clientId,
+  sortBy = "updated_at",
+  sortDir = "desc",
+}: {
+  page?: number;
+  pageSize?: number;
+  classification?: "hot" | "warm" | "cold";
+  botPaused?: boolean;
+  status?: "bot_active" | "human_active" | "resolved" | "lost";
+  handoffMode?: "urgent" | "requested" | "technical" | "observer";
+  search?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  minScore?: number;
+  clientId?: string;
+  sortBy?: "name" | "score" | "created_at" | "classification" | "updated_at";
+  sortDir?: "asc" | "desc";
+}) {
+  const supabase = createServiceClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const ascending = sortDir === "asc";
+
+  let query = supabase
+    .from("leads")
+    .select(
+      "id, phone, name, classification, score, bot_paused, bot_paused_reason, bot_paused_at, status, handoff_mode, handoff_reason, order_confirmed_at, created_at, updated_at, client_id",
+      { count: "exact" }
+    )
+    .order(sortBy, { ascending, nullsFirst: false })
+    .range(from, to);
+
+  if (sortBy === "updated_at") {
+    query = query.order("created_at", { ascending: false });
+  }
+  if (sortBy === "name") {
+    query = query.order("phone", { ascending: true });
+  }
+
+  if (classification) query = query.eq("classification", classification);
+  if (botPaused !== undefined) query = query.eq("bot_paused", botPaused);
+  if (status) query = query.eq("status", status);
+  if (handoffMode) query = query.eq("handoff_mode", handoffMode);
+  if (search) query = query.or(`phone.ilike.%${search}%,name.ilike.%${search}%`);
+  if (dateFrom) query = query.gte("created_at", dateFrom);
+  if (dateTo) {
+    const endDate = new Date(dateTo);
+    endDate.setDate(endDate.getDate() + 1);
+    query = query.lt("created_at", endDate.toISOString().slice(0, 10));
+  }
+  if (minScore !== undefined) query = query.gte("score", minScore);
+  if (clientId) query = query.eq("client_id", clientId);
+
+  const { data, count, error } = await query;
+  return { leads: data ?? [], total: count ?? 0, error };
 }

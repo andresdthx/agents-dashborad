@@ -33,7 +33,7 @@ export default async function LeadDetailPage({
   ]);
 
   if (error || !leadData) notFound();
-  const lead = leadData!;
+  const lead = leadData;
 
   return (
     <div className="space-y-6">
@@ -96,8 +96,7 @@ export default async function LeadDetailPage({
         <div className="flex items-center gap-3 rounded-lg border border-lead-hot/25 bg-lead-hot-surface px-4 py-3">
           <ClipboardList className="h-4 w-4 shrink-0 text-lead-hot-text" />
           <p className="text-sm font-medium text-lead-hot-text">
-            Lead urgente con información pendiente — recopila los datos que faltan antes de cerrar
-            (puntaje actual: {lead.score ?? 0}/100)
+            Cliente potencial de compra — alta intención detectada, listo para cerrar
           </p>
         </div>
       )}
@@ -256,23 +255,32 @@ export default async function LeadDetailPage({
       )}
 
       {/* Order data */}
-      {lead.order_data && (
-        <div className="rounded-lg border border-lead-warm/25 bg-lead-warm-surface p-4">
-          <p className="text-sm font-semibold text-lead-warm-text">Pedido confirmado</p>
-          <dl className="mt-3 space-y-2">
-            {Object.entries(lead.order_data as Record<string, unknown>).map(([key, value]) => (
-              <div key={key} className="flex flex-wrap gap-x-3 gap-y-0.5">
-                <dt className="shrink-0 text-xs font-medium capitalize text-lead-warm-text opacity-70">
-                  {key.replace(/_/g, " ")}
-                </dt>
-                <dd className="text-xs text-lead-warm-text">
-                  {typeof value === "object" && value !== null
-                    ? JSON.stringify(value)
-                    : String(value ?? "—")}
-                </dd>
+      {Array.isArray(lead.order_data) && lead.order_data.length > 0 && (
+        <div className="space-y-3">
+          {(lead.order_data as Array<Record<string, unknown>>).map((entry, index) => {
+            const isPedido = entry.pedido_confirmado === true;
+            return (
+              <div key={index} className="rounded-lg border border-lead-warm/25 bg-lead-warm-surface p-4">
+                <p className="text-sm font-semibold text-lead-warm-text">
+                  {isPedido ? "Pedido confirmado" : "Reserva confirmada"}
+                </p>
+                <dl className="mt-3 space-y-2">
+                  {Object.entries(entry).map(([key, value]) => (
+                    <div key={key} className="flex flex-wrap gap-x-3 gap-y-0.5">
+                      <dt className="shrink-0 text-xs font-medium capitalize text-lead-warm-text opacity-70">
+                        {key.replace(/_/g, " ")}
+                      </dt>
+                      <dd className="text-xs text-lead-warm-text">
+                        {typeof value === "object" && value !== null
+                          ? JSON.stringify(value)
+                          : String(value ?? "—")}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
               </div>
-            ))}
-          </dl>
+            );
+          })}
         </div>
       )}
 

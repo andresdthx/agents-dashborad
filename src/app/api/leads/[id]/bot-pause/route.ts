@@ -30,8 +30,7 @@ export async function PATCH(
   const { id } = await params;
   const { bot_paused, reason } = parsed.data;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc("toggle_bot_pause", {
+  const { data, error } = await supabase.rpc("toggle_bot_pause", {
     p_lead_id: id,
     p_bot_paused: bot_paused,
     p_reason: reason ?? null,

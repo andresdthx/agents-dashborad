@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLeadStats, getLeadChartData } from "@/lib/queries/leads";
 import { getGlobalStats, getClientsSummary, getGlobalLeadChartData } from "@/lib/queries/clients";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionClientUser } from "@/lib/queries/session";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { DonutChart } from "@/components/dashboard/DonutChart";
 import { WeeklySparkline } from "@/components/dashboard/WeeklySparkline";
@@ -15,31 +15,22 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getSessionClientUser is memoized with React.cache — shares the result with
+  // the layout's call, so no extra DB round-trip happens here.
+  const session = await getSessionClientUser();
 
-// Obtener rol, client_id y nombre del negocio en una sola query
-  const { data: clientUserData } = await supabase
-    .from("client_users")
-    .select("role, client_id, clients(name)")
-    .eq("user_id", user?.id ?? "")
-    .limit(1)
-    .single();
-
-  const clientName = (clientUserData?.clients as { name?: string } | null)?.name ?? null;
+  const clientName = (session?.clients as { name?: string } | null)?.name ?? null;
   const rawName =
     clientName ??
-    user?.user_metadata?.full_name ??
-    user?.email?.split("@")[0]?.split(".")[0] ??
+    session?.user?.user_metadata?.full_name ??
+    session?.user?.email?.split("@")[0]?.split(".")[0] ??
     "usuario";
   const displayName =
     typeof rawName === "string"
       ? rawName.charAt(0).toUpperCase() + rawName.slice(1)
       : "usuario";
 
-  const isSuperAdmin = clientUserData?.role === "super_admin";
+  const isSuperAdmin = session?.role === "super_admin";
 
   // Si es super_admin, cargar métricas globales
   if (isSuperAdmin) {
@@ -138,8 +129,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-2.5">
             <ClipboardList className="h-4 w-4 shrink-0 text-lead-hot-text" />
             <p className="text-sm font-medium text-lead-hot-text">
-              {stats.hotPending} lead{stats.hotPending !== 1 ? "s" : ""} hot con información
-              pendiente — se debe recopilar datos antes de cerrar
+              {stats.hotPending} cliente{stats.hotPending !== 1 ? "s" : ""} potencial{stats.hotPending !== 1 ? "es" : ""} de compra — listos para cerrar
             </p>
           </div>
           <Link
@@ -166,7 +156,7 @@ export default async function DashboardPage() {
             </p>
           </div>
           <Link
-            href="/dashboard/leads?paused=true"
+            href="/dashboard/leads?status=human_active"
             className="shrink-0 rounded-lg bg-bot-paused px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
           >
             Atender ahora
