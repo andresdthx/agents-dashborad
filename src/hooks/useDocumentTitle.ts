@@ -10,6 +10,7 @@ export const PAGE_TITLES: Record<string, string> = {
   "/dashboard/settings/catalog": "Configuración · Catálogo",
   "/dashboard/settings/handoff": "Configuración · Transferencias",
   "/dashboard/settings/reservation": "Configuración · Reservas",
+  "/dashboard/settings/schedule": "Configuración · Agenda",
   "/dashboard/settings/faqs": "Configuración · FAQs",
   "/admin/clients": "Clientes",
   "/admin/clients/new": "Nuevo cliente",

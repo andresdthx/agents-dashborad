@@ -2,6 +2,7 @@
 
 import { createServiceClient } from "@/lib/supabase/service";
 import type { ReservationOutputField } from "@/types/database";
+import type { WeeklyScheduleDb } from "@/lib/schedule";
 
 export interface ReservationConfigInput {
   output_fields: ReservationOutputField[];
@@ -79,5 +80,62 @@ export async function saveConfirmationExample(
     );
 
   if (error) return { error: error.message };
+  return { error: null };
+}
+
+/**
+ * Fetch the weekly schedule for a client.
+ * Returns null when no config row exists or when schedule has not been set.
+ */
+export async function getSchedule(
+  clientId: string
+): Promise<{ schedule: WeeklyScheduleDb | null; error: string | null }> {
+  const supabase = createServiceClient();
+
+  const { data, error } = await supabase
+    .from("client_reservation_config")
+    .select("schedule")
+    .eq("client_id", clientId)
+    .maybeSingle();
+
+  if (error) return { schedule: null, error: error.message };
+
+  return {
+    schedule: (data?.schedule as WeeklyScheduleDb | null) ?? null,
+    error: null,
+  };
+}
+
+/**
+ * Save the weekly schedule for a client without touching other config fields.
+ * Uses UPDATE when the row exists to avoid overwriting output_fields,
+ * block_enabled, and confirmation_example. Falls back to INSERT (with DB
+ * defaults for other columns) only when no row exists yet.
+ */
+export async function saveSchedule(
+  clientId: string,
+  schedule: WeeklyScheduleDb | null
+): Promise<{ error: string | null }> {
+  const supabase = createServiceClient();
+
+  const { data: existing } = await supabase
+    .from("client_reservation_config")
+    .select("id")
+    .eq("client_id", clientId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from("client_reservation_config")
+      .update({ schedule })
+      .eq("client_id", clientId);
+    if (error) return { error: error.message };
+  } else {
+    const { error } = await supabase
+      .from("client_reservation_config")
+      .insert({ client_id: clientId, schedule });
+    if (error) return { error: error.message };
+  }
+
   return { error: null };
 }

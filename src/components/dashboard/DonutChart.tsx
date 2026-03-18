@@ -13,19 +13,19 @@ const GAP = 4;
 const LEGEND = [
   {
     key: "hot" as const,
-    label: "Hot",
+    label: "Alto interés",
     href: "/dashboard/leads?classification=hot",
     color: "var(--color-lead-hot)",
   },
   {
     key: "warm" as const,
-    label: "Warm",
+    label: "En seguimiento",
     href: "/dashboard/leads?classification=warm",
     color: "var(--color-lead-warm)",
   },
   {
     key: "cold" as const,
-    label: "Cold",
+    label: "Bajo interés",
     href: "/dashboard/leads?classification=cold",
     color: "var(--color-lead-cold)",
   },
