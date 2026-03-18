@@ -48,9 +48,6 @@ interface NewFieldState {
 export function ReservationFieldsManager({ clientId, initialConfig }: Props) {
   // When no config exists, start with the defaults (empty output_fields = use defaults in backend).
   // We display defaults in the UI, but save them explicitly only when the user makes a change.
-  const [blockEnabled, setBlockEnabled] = useState<boolean>(
-    initialConfig?.block_enabled ?? true
-  );
   const [fields, setFields] = useState<ReservationOutputField[]>(
     initialConfig?.output_fields?.length
       ? initialConfig.output_fields
@@ -70,14 +67,11 @@ export function ReservationFieldsManager({ clientId, initialConfig }: Props) {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
-  const persist = useCallback(async (
-    nextFields: ReservationOutputField[],
-    nextEnabled: boolean
-  ) => {
+  const persist = useCallback(async (nextFields: ReservationOutputField[]) => {
     setSaving(true);
     const { error } = await saveReservationConfig(clientId, {
       output_fields: nextFields,
-      block_enabled: nextEnabled,
+      block_enabled: true,
     });
     setSaving(false);
     if (error) {
@@ -86,17 +80,6 @@ export function ReservationFieldsManager({ clientId, initialConfig }: Props) {
     }
     return true;
   }, [clientId]);
-
-  // ── Toggle block enabled ───────────────────────────────────────────────────
-
-  const handleToggleBlock = useCallback(async () => {
-    const next = !blockEnabled;
-    const previous = blockEnabled;
-    setBlockEnabled(next);
-    const ok = await persist(fields, next);
-    if (!ok) setBlockEnabled(previous);
-    else toast.success(next ? "Bloque de reserva activado" : "Bloque de reserva desactivado");
-  }, [blockEnabled, fields, persist]);
 
   // ── Toggle required ────────────────────────────────────────────────────────
 
@@ -107,11 +90,11 @@ export function ReservationFieldsManager({ clientId, initialConfig }: Props) {
       f.key === field.key ? { ...f, required: !f.required } : f
     );
     setFields(next);
-    const ok = await persist(next, blockEnabled);
+    const ok = await persist(next);
     if (!ok) setFields(previous);
     else toast.success(`Campo "${field.label}" ${!field.required ? "marcado como requerido" : "marcado como opcional"}`);
     setTogglingKey(null);
-  }, [fields, blockEnabled, persist]);
+  }, [fields, persist]);
 
   // ── Edit label / hint ──────────────────────────────────────────────────────
 
@@ -136,10 +119,10 @@ export function ReservationFieldsManager({ clientId, initialConfig }: Props) {
     );
     setFields(next);
     setEditingKey(null);
-    const ok = await persist(next, blockEnabled);
+    const ok = await persist(next);
     if (!ok) { setFields(previous); setEditingKey(field.key); }
     else toast.success("Campo actualizado");
-  }, [editState, fields, blockEnabled, persist]);
+  }, [editState, fields, persist]);
 
   // ── Delete ─────────────────────────────────────────────────────────────────
 
@@ -149,11 +132,11 @@ export function ReservationFieldsManager({ clientId, initialConfig }: Props) {
     const previous = fields;
     const next = fields.filter((f) => f.key !== key);
     setFields(next);
-    const ok = await persist(next, blockEnabled);
+    const ok = await persist(next);
     if (!ok) setFields(previous);
     else toast.success("Campo eliminado");
     setDeletingKey(null);
-  }, [fields, blockEnabled, persist]);
+  }, [fields, persist]);
 
   // ── Add custom field ───────────────────────────────────────────────────────
 
@@ -176,7 +159,7 @@ export function ReservationFieldsManager({ clientId, initialConfig }: Props) {
     };
     const next = [...fields, created];
     setFields(next);
-    const ok = await persist(next, blockEnabled);
+    const ok = await persist(next);
     if (!ok) {
       setFields(fields);
     } else {
@@ -185,41 +168,14 @@ export function ReservationFieldsManager({ clientId, initialConfig }: Props) {
       toast.success("Campo añadido");
     }
     setSavingNew(false);
-  }, [newField, fields, blockEnabled, persist]);
+  }, [newField, fields, persist]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="w-full space-y-5">
-      {/* Global toggle */}
-      <div className="flex items-center justify-between rounded-xl border border-edge bg-surface-raised shadow-sm px-4 py-3">
-        <div>
-          <p className="text-sm font-medium text-ink">Bloque de reserva</p>
-          <p className="mt-0.5 text-xs text-ink-4">
-            Cuando está activo, el agente emite el bloque RESERVA_INICIO/FIN al confirmar una cita.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={handleToggleBlock}
-          disabled={saving}
-          aria-label={blockEnabled ? "Desactivar bloque de reserva" : "Activar bloque de reserva"}
-          className={cn(
-            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-            blockEnabled ? "bg-signal" : "bg-edge"
-          )}
-        >
-          <span
-            className={cn(
-              "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition-transform",
-              blockEnabled ? "translate-x-4" : "translate-x-0"
-            )}
-          />
-        </button>
-      </div>
-
       {/* Fields list */}
-      <div className={cn("space-y-3", !blockEnabled && "pointer-events-none opacity-50")}>
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium uppercase tracking-wider text-ink-4">
             Campos del bloque · {fields.length} configurados

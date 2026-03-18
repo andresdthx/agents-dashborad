@@ -37,14 +37,26 @@ export async function getReservationConfig(
   };
 }
 
+// Claves del sistema que no cuentan hacia el límite de campos custom.
+const SYSTEM_FIELD_KEYS = new Set(["fecha", "hora", "reserva_confirmada"]);
+const CUSTOM_FIELD_LIMIT = 5;
+
 /**
  * Upsert output_fields + block_enabled for a client.
  * Creates the row if it does not exist, updates it if it does.
+ * block_enabled is always forced to true — the reservation block is critical.
  */
 export async function saveReservationConfig(
   clientId: string,
   config: ReservationConfigInput
 ): Promise<{ error: string | null }> {
+  const customFieldCount = config.output_fields.filter(
+    (f) => !SYSTEM_FIELD_KEYS.has(f.key)
+  ).length;
+  if (customFieldCount > CUSTOM_FIELD_LIMIT) {
+    return { error: `No se pueden guardar más de ${CUSTOM_FIELD_LIMIT} campos personalizados` };
+  }
+
   const supabase = createServiceClient();
 
   const { error } = await supabase
@@ -53,7 +65,7 @@ export async function saveReservationConfig(
       {
         client_id: clientId,
         output_fields: config.output_fields,
-        block_enabled: config.block_enabled,
+        block_enabled: true, // siempre activo — bloque crítico del sistema
       },
       { onConflict: "client_id" }
     );

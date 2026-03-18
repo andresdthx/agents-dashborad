@@ -36,8 +36,16 @@ interface FieldState {
 interface Props {
   clientId: string;
   initialOutputFields: ReservationOutputField[];
-  initialBlockEnabled: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+// Claves del sistema que no cuentan hacia el límite de campos custom.
+// Deben coincidir con DEFAULT_RESERVATION_FIELDS en el backend (llm.ts).
+const SYSTEM_FIELD_KEYS = new Set(["fecha", "hora", "reserva_confirmada"]);
+const CUSTOM_FIELD_LIMIT = 5;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -51,7 +59,7 @@ function buildInitialFields(saved: ReservationOutputField[]): FieldState[] {
     example: f.example,
     required: f.required ?? false,
     enabled: true,
-    isDefault: false,
+    isDefault: SYSTEM_FIELD_KEYS.has(f.key),
   }));
 }
 
@@ -71,9 +79,7 @@ function toOutputFields(fields: FieldState[]): ReservationOutputField[] {
 export function ReservationBlockManager({
   clientId,
   initialOutputFields,
-  initialBlockEnabled,
 }: Props) {
-  const [blockEnabled, setBlockEnabled] = useState(initialBlockEnabled);
   const [fields, setFields] = useState<FieldState[]>(() =>
     buildInitialFields(initialOutputFields)
   );
@@ -93,30 +99,13 @@ export function ReservationBlockManager({
 
   // ── Persist ───────────────────────────────────────────────────────────────
 
-  const persist = useCallback(async (
-    nextFields: FieldState[],
-    nextEnabled: boolean,
-  ) => {
+  const persist = useCallback(async (nextFields: FieldState[]) => {
     const { error } = await saveReservationConfig(clientId, {
       output_fields: toOutputFields(nextFields),
-      block_enabled: nextEnabled,
+      block_enabled: true,
     });
     return error;
   }, [clientId]);
-
-  // ── Toggle block ──────────────────────────────────────────────────────────
-
-  const handleToggleBlock = useCallback(async () => {
-    const next = !blockEnabled;
-    setBlockEnabled(next);
-    const error = await persist(pendingFieldsRef.current, next);
-    if (error) {
-      setBlockEnabled(!next);
-      toast.error("Error al cambiar el estado del bloque");
-    } else {
-      toast.success(next ? "Bloque de reserva activado" : "Bloque de reserva desactivado");
-    }
-  }, [blockEnabled, persist]);
 
   // ── Toggle field ──────────────────────────────────────────────────────────
 
@@ -127,7 +116,7 @@ export function ReservationBlockManager({
       f.key === key ? { ...f, enabled: !f.enabled } : f
     );
     setFields(next);
-    const error = await persist(next, blockEnabled);
+    const error = await persist(next);
     setTogglingKey(null);
     if (error) {
       setFields(previous);
@@ -136,7 +125,7 @@ export function ReservationBlockManager({
       const toggled = next.find((f) => f.key === key);
       toast.success(toggled?.enabled ? "Campo activado" : "Campo desactivado");
     }
-  }, [blockEnabled, persist]);
+  }, [persist]);
 
   // ── Expand / edit ─────────────────────────────────────────────────────────
 
@@ -181,7 +170,7 @@ export function ReservationBlockManager({
     );
     setFields(next);
     setEditingKey(null);
-    const error = await persist(next, blockEnabled);
+    const error = await persist(next);
     setSavingKey(null);
     if (error) {
       setFields(previous);
@@ -190,7 +179,7 @@ export function ReservationBlockManager({
     } else {
       toast.success("Campo actualizado");
     }
-  }, [editHint, editLabel, editExample, blockEnabled, persist]);
+  }, [editHint, editLabel, editExample, persist]);
 
   // ── Delete (custom fields only) ───────────────────────────────────────────
 
@@ -200,14 +189,14 @@ export function ReservationBlockManager({
     const next = previous.filter((f) => f.key !== key);
     setFields(next);
     setExpandedKey(null);
-    const error = await persist(next, blockEnabled);
+    const error = await persist(next);
     if (error) {
       setFields(previous);
       toast.error("Error al eliminar el campo");
     } else {
       toast.success("Campo eliminado");
     }
-  }, [blockEnabled, persist]);
+  }, [persist]);
 
   // ── Add custom field ──────────────────────────────────────────────────────
 
@@ -240,48 +229,21 @@ export function ReservationBlockManager({
     setNewField({ label: "", hint: "", example: "" });
     setShowNewForm(false);
     setExpandedKey(key);
-    const error = await persist(next, blockEnabled);
+    const error = await persist(next);
     if (error) {
       setFields(pendingFieldsRef.current.filter((f) => f.key !== key));
       toast.error("Error al crear el campo");
     } else {
       toast.success("Campo creado");
     }
-  }, [newField, blockEnabled, persist]);
+  }, [newField, persist]);
 
-  const CUSTOM_FIELD_LIMIT = 5;
-  const customFields = fields.filter((f) => !f.isDefault);
+  const customFields = fields.filter((f) => !SYSTEM_FIELD_KEYS.has(f.key));
   const activeCount = fields.filter((f) => f.enabled).length;
   const atLimit = customFields.length >= CUSTOM_FIELD_LIMIT;
 
   return (
     <div className="w-full space-y-5">
-
-      {/* ── Block enable toggle ─────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between rounded-xl border border-edge bg-surface-raised shadow-sm px-4 py-3">
-        <div>
-          <p className="text-sm font-medium text-ink">Bloque de reserva</p>
-          <p className="mt-0.5 text-xs text-ink-4">
-            Cuando está activo, el agente emite el bloque RESERVA_INICIO/FIN al confirmar una cita.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={handleToggleBlock}
-          aria-label={blockEnabled ? "Desactivar bloque de reserva" : "Activar bloque de reserva"}
-          className={cn(
-            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            blockEnabled ? "bg-signal" : "bg-edge"
-          )}
-        >
-          <span
-            className={cn(
-              "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition-transform",
-              blockEnabled ? "translate-x-4" : "translate-x-0"
-            )}
-          />
-        </button>
-      </div>
 
       {/* ── Fields ─────────────────────────────────────────────────────────── */}
       <div className="space-y-4">
