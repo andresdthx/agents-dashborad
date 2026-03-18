@@ -50,7 +50,6 @@ export default async function ReservationSettingsPage() {
     <ReservationBlockManager
       clientId={clientId}
       initialOutputFields={config?.output_fields ?? []}
-      initialBlockEnabled={config?.block_enabled ?? true}
     />
   );
 }
